@@ -10,6 +10,7 @@ import ViewNotice from "./VisualizarNoticias";
 import Home from "./Home";
 import NavigationBar from "./NavBarUp";
 import MenuComple from "./Menu";
+import ViewRevista from './VisualizadorRevista'
 
 const Tab = createBottomTabNavigator();
 
@@ -28,6 +29,8 @@ function MyTabs() {
               iconName = focused ? "gear" : "gear";
             } else if (route.name === "Menu") {
               iconName = focused ? "bars" : "bars"; // Cambiado a "bars" para el icono de menú
+            } else if (route.name==="Noticias"){
+              iconName = focused ? "news" : "news";
             } 
             return <Icon name={iconName} size={size} color={color} />;
           },
@@ -57,7 +60,15 @@ function MyTabs() {
           options={{
             headerShown: false,
           }}
-        />        
+        />  
+        <Tab.Screen
+          name="Noticias"
+          component={ViewNotice}
+          options={{
+            headerShown: false,
+          }}
+        />  
+               
       </Tab.Navigator>
     </>
   );
