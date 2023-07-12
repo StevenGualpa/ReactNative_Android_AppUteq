@@ -4,14 +4,14 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Linking, D
 const { width } = Dimensions.get('window');
 const cardWidth = width * 0.9;
 
-const NewsCard = ({ image, title, category }) => {
+const NewsCard = ({ image, title, category, url }) => {
   const handleReadMore = () => {
-    Linking.openURL('https://www.uteq.edu.ec/comunicacion/noticia/convocatoria-a-concurso-de-cortometraje-crear-conciencia-ambiental');
+    Linking.openURL(url);
   };
 
   return (
     <View style={styles.card}>
-      <Image source={{ uri: image }} style={styles.image} />
+      <Image source={image} style={styles.image} />
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.category}>{category}</Text>
       <TouchableOpacity style={styles.button} onPress={handleReadMore}>
@@ -30,7 +30,7 @@ const ViewRevista = () => {
   useEffect(() => {
     fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/noticias')
       .then((response) => response.json())
-      .then((noticias) => setNoticias(noticias));
+      .then((data) => setNoticias(data.noticias));
   }, []);
 
   return (
@@ -39,10 +39,11 @@ const ViewRevista = () => {
       <ScrollView>
         {noticias.map((noticia) => (
           <NewsCard
-            key={noticia.ID}
-            image={noticia.Portada}
-            title={noticia.Titulo}
-            category={noticia.Tags}
+            key={noticia.id}
+            image={{ uri: noticia.portada }}
+            title={noticia.titulo}
+            category={noticia.tags.map(tag => tag.value).join(", ")}
+            url={noticia.url}
           />
         ))}
       </ScrollView>
