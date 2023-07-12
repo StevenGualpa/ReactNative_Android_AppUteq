@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { StyleSheet, Text, View, ImageBackground, Image, TextInput, TouchableOpacity, ScrollView, Dimensions, Alert } from 'react-native';
 import { Publicar } from './Components/Botones';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,6 +42,7 @@ export function Contenido() {
         titulo,
         descripcion,
         url,
+        fecha: serverTimestamp() // Agrega la fecha actual al campo "fecha"
       };
       await addDoc(contenidoCollection, nuevoContenido);
       console.log('Datos guardados en Firebase:', nuevoContenido);
@@ -119,6 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f6fa',
     alignItems: 'center',
     paddingTop: height * 0.05,
+    paddingBottom: height * 0.1, // Ajustar el espacio inferior
   },
   container2: {
     alignItems: 'center',

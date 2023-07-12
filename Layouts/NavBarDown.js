@@ -9,6 +9,7 @@ import { Contenido } from "./Contenido";
 import ViewNotice from "./VisualizarNoticias";
 import Home from "./Home";
 import NavigationBar from "./NavBarUp";
+import MenuComple from "./Menu";
 
 const Tab = createBottomTabNavigator();
 
@@ -25,14 +26,9 @@ function MyTabs() {
               iconName = focused ? "home" : "home";
             } else if (route.name === "Preferencias") {
               iconName = focused ? "gear" : "gear";
-            } else if (route.name === "Gestión") {
-              iconName = focused ? "folder" : "folder";
-            } else if (route.name === "Crear") {
-              iconName = focused ? "plus" : "plus";
-            } else if (route.name === "Noticias") {
-              iconName = focused ? "newspaper-o" : "newspaper-o";
-            }
-
+            } else if (route.name === "Menu") {
+              iconName = focused ? "bars" : "bars"; // Cambiado a "bars" para el icono de menú
+            } 
             return <Icon name={iconName} size={size} color={color} />;
           },
         })}
@@ -56,26 +52,12 @@ function MyTabs() {
           }}
         />
         <Tab.Screen
-          name="Gestión"
-          component={AppGestion}
+          name="Menu"
+          component={MenuComple}
           options={{
             headerShown: false,
           }}
-        />
-        <Tab.Screen
-          name="Crear"
-          component={Contenido}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Tab.Screen
-          name="Noticias"
-          component={ViewNotice}
-          options={{
-            headerShown: false,
-          }}
-        />
+        />        
       </Tab.Navigator>
     </>
   );

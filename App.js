@@ -8,6 +8,7 @@ import ProfileScreen from './Layouts/Perfil';
 import NavigationBar from './Layouts/NavBarUp';
 import Home from './Layouts/Home';
 import AppGestion from './Layouts/GestionContenido';
+import MenuComple from './Layouts/Menu';
 import ContentCard from './Layouts/VisualizadorContenidos';
 export default function App() {
   return (

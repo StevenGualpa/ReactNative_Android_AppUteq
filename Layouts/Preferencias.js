@@ -1,12 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { CheckBox } from 'react-native-elements';
+import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 export function Prefer() {
   const [checkedItems, setCheckedItems] = useState([]);
+  const [facultades, setFacultades] = useState([]);
+
+  useEffect(() => {
+    const fetchFacultades = async () => {
+      try {
+        const db = getFirestore();
+        const facultadesCollection = collection(db, 'Facultades');
+        const facultadesSnapshot = await getDocs(facultadesCollection);
+        const facultadesData = facultadesSnapshot.docs.map((doc) => doc.data().nombre);
+        setFacultades(facultadesData);
+      } catch (error) {
+        console.error('Error al obtener las facultades:', error);
+      }
+    };
+
+    fetchFacultades();
+  }, []);
 
   const handleCheckboxChange = (item) => {
     if (checkedItems.includes(item)) {
@@ -36,14 +54,7 @@ export function Prefer() {
     <View style={styles.container}>
       <Text style={styles.title}>Preferencias</Text>
       <ScrollView contentContainerStyle={styles.checkboxContainer}>
-        {renderCheckbox('Facultad de Ciencias de la Salud')}
-        {renderCheckbox('Facultad de Ciencias de la Educación')}
-        {renderCheckbox('Facultad de Ciencias de la Ingeniería')}
-        {renderCheckbox('Facultad de Ciencias de la Industria y Producción')}
-        {renderCheckbox('Facultad de Ciencias Agrarias y Forestales')}
-        {renderCheckbox('Facultad de Ciencias Sociales, Económicas y Financieras')}
-        {renderCheckbox('Facultad de Ciencias Empresariales')}
-        {renderCheckbox('Facultad de Ciencias Pecuarias y Biológicas')}
+        {facultades.map((facultad) => renderCheckbox(facultad))}
       </ScrollView>
       <TouchableOpacity
         style={[styles.button, { backgroundColor: '#46b41e' }]}
@@ -61,6 +72,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: windowWidth * 0.05,
+    backgroundColor: '#f5f6fa',
   },
   title: {
     fontSize: windowHeight * 0.04,

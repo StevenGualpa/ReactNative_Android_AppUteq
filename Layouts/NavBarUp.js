@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, Dimensions, Modal, Pressable, ImageBackground, StatusBar, Image, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 
 const { width, height } = Dimensions.get('window');
 
@@ -9,6 +10,24 @@ const NavigationBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
+  const [facultades, setFacultades] = useState([]);
+  const [selectedFacultad, setSelectedFacultad] = useState(null);
+
+  useEffect(() => {
+    const fetchFacultades = async () => {
+      try {
+        const db = getFirestore();
+        const facultadesCollection = collection(db, 'Facultades');
+        const facultadesSnapshot = await getDocs(facultadesCollection);
+        const facultadesData = facultadesSnapshot.docs.map((doc) => doc.data());
+        setFacultades(facultadesData);
+      } catch (error) {
+        console.error('Error al obtener las facultades:', error);
+      }
+    };
+
+    fetchFacultades();
+  }, []);
 
   const handleSearch = () => {
     console.log('Buscar:', searchText);
@@ -28,6 +47,34 @@ const NavigationBar = () => {
     setSearchText('');
   };
 
+  const handleFacultadSelect = (facultad) => {
+    setSelectedFacultad(facultad);
+    setIsMenuOpen(false);
+  };
+
+  const handleModalClose = () => {
+    setSelectedFacultad(null);
+  };
+
+  const renderModalContent = () => {
+    if (selectedFacultad) {
+      return (
+        <View style={styles.modalContentContainer}>
+          <Text style={styles.modalTitle}>{selectedFacultad.nombre}</Text>
+          <Text style={styles.modalSubtitle}>Misión:</Text>
+          <Text style={styles.modalText}>{selectedFacultad.mision}</Text>
+          <Text style={styles.modalSubtitle}>Visión:</Text>
+          <Text style={styles.modalText}>{selectedFacultad.vision}</Text>
+          <TouchableOpacity style={styles.modalCloseButton} onPress={handleModalClose}>
+            <Text style={styles.modalCloseButtonText}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <>
       <StatusBar backgroundColor="#f2f2f2" barStyle="dark-content" />
@@ -42,14 +89,15 @@ const NavigationBar = () => {
             </Pressable>
             <ScrollView style={styles.menuOptionsContainer}>
               <View style={styles.menuOptions}>
-                <Text style={styles.menuItem}>Facultad de Ciencias de la Salud</Text>
-                <Text style={styles.menuItem}>Facultad de Ciencias de la Educación</Text>
-                <Text style={styles.menuItem}>Facultad de Ciencias de la Ingeniería</Text>
-                <Text style={styles.menuItem}>Facultad de Ciencias de la Industria y Producción</Text>
-                <Text style={styles.menuItem}>Facultad de Ciencias Agrarias y Forestales</Text>
-                <Text style={styles.menuItem}>Facultad de Ciencias Sociales, Económicas y Financieras</Text>
-                <Text style={styles.menuItem}>Facultad de Ciencias Empresariales</Text>
-                <Text style={styles.menuItem}>Facultad de Ciencias Pecuarias y Biológicas</Text>
+                {facultades.map((facultad, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.menuItemContainer}
+                    onPress={() => handleFacultadSelect(facultad)}
+                  >
+                    <Text style={styles.menuItem}>{facultad.nombre}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </ScrollView>
           </ImageBackground>
@@ -86,9 +134,19 @@ const NavigationBar = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Modal de Facultad */}
+      <Modal visible={selectedFacultad !== null} animationType="slide" transparent={true}>
+        <View style={styles.modalContainer}>
+          <ImageBackground source={require('./src/Fondo.jpg')} style={styles.modalBackground}>
+            {renderModalContent()}
+          </ImageBackground>
+        </View>
+      </Modal>
     </>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -96,7 +154,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     height: 60,
     paddingHorizontal: 10,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#f5f6fa',
   },
   menuButton: {
     paddingHorizontal: 10,
@@ -154,19 +212,20 @@ const styles = StyleSheet.create({
     right: 10,
     padding: 10,
   },
+  menuOptionsContainer: {
+    flex: 1,
+    paddingTop: height * 0.07,
+  },
   menuOptions: {
-    marginTop: height * 0.07,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    padding: 10,
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
-    borderRadius: 10,
+    alignItems: 'flex-start',
+    paddingHorizontal: 10,
+  },
+  menuItemContainer: {
+    marginBottom: 10,
   },
   menuItem: {
     fontSize: 18,
     color: 'white',
-    marginBottom: 10,
   },
   searchModalContainer: {
     flex: 1,
@@ -190,6 +249,52 @@ const styles = StyleSheet.create({
   searchResultItem: {
     fontSize: 18,
     marginBottom: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBackground: {
+    flex: 1,
+    resizeMode: 'cover',
+    width: width,
+    height: height,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalContentContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 10,
+    padding: 20,
+    width: width * 0.8,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalSubtitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  modalCloseButton: {
+    backgroundColor: '#46b41e',
+    borderRadius: 8,
+    padding: 10,
+    alignSelf: 'center',
+    marginTop: 20,
+  },
+  modalCloseButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

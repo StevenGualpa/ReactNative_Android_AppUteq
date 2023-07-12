@@ -9,6 +9,8 @@ const Home = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [contentData, setContentData] = useState([]);
   const [magazineData, setMagazineData] = useState([]);
+  const [noticeData, setnoticeData] = useState([]);
+
 
   useEffect(() => {
     const fetchContentData = async () => {
@@ -43,6 +45,24 @@ const Home = () => {
   
 
 
+
+  const fetchnoticeData = async () => {
+    try {
+      const response = await axios.get('https://my-json-server.typicode.com/StevenGualpa/Api_Historial/Noticias'); // La ruta de tu API
+      setnoticeData(response.data);
+    } catch (error) {
+      console.error('Error al obtener los contenidos de la API:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchnoticeData();
+  }, []);
+  
+
+
+  
+
   const handleButtonPress = (link) => {
     Linking.openURL(link);
   };
@@ -69,39 +89,17 @@ const Home = () => {
     console.log(`Redirigiendo a la sección: ${section}`);
   };
 
-  const renderNewsCards = () => {
+  const renderNewsCards =() => {
     return (
       <ScrollView horizontal>
-        <View style={styles.card}>
-          <View style={styles.logoContainer}>
-            <Image source={require('./iconos/refresh.png')} style={styles.logo} />
+        {noticeData.map((content) => (
+          <View key={content.Titulo} style={styles.card}>
+
+            <TouchableOpacity style={styles.button} onPress={() => handleButtonPress(content.url)}>
+              <Text style={styles.buttonText}>Leer más</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.title}>Título de la noticia 1</Text>
-          <Text style={styles.category}>Categoría 1</Text>
-          <TouchableOpacity style={styles.button} onPress={() => handleButtonPress('https://www.example.com')}>
-            <Text style={styles.buttonText}>Leer más</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.card}>
-          <View style={styles.logoContainer}>
-            <Image source={require('./iconos/refresh.png')} style={styles.logo} />
-          </View>
-          <Text style={styles.title}>Título de la noticia 1</Text>
-          <Text style={styles.category}>Categoría 1</Text>
-          <TouchableOpacity style={styles.button} onPress={() => handleButtonPress('https://www.example.com')}>
-            <Text style={styles.buttonText}>Leer más</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.card}>
-          <View style={styles.logoContainer}>
-            <Image source={require('./iconos/refresh.png')} style={styles.logo} />
-          </View>
-          <Text style={styles.title}>Título de la noticia 1</Text>
-          <Text style={styles.category}>Categoría 1</Text>
-          <TouchableOpacity style={styles.button} onPress={() => handleButtonPress('https://www.example.com')}>
-            <Text style={styles.buttonText}>Leer más</Text>
-          </TouchableOpacity>
-        </View>
+        ))}
       </ScrollView>
     );
   };
