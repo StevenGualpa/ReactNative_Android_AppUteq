@@ -30,7 +30,11 @@ const ViewRevista = () => {
   useEffect(() => {
     fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/noticias')
       .then((response) => response.json())
-      .then((data) => setNoticias(data.noticias));
+      .then((data) => {
+        const filteredData = data.noticias.filter(noticia => noticia.id >= 10);
+        setNoticias(filteredData);
+      })
+      .catch((error) => console.error(error));
   }, []);
 
   return (
