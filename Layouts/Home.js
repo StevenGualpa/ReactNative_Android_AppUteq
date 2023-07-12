@@ -94,7 +94,10 @@ const Home = () => {
       <ScrollView horizontal>
         {noticeData.map((content) => (
           <View key={content.Titulo} style={styles.card}>
-
+          <View style={styles.logoContainer}>
+              <Image source={{ uri: content.Portada }} style={styles.logo} />
+            </View>
+            <Text style={styles.title}>{content.Titulo}</Text>
             <TouchableOpacity style={styles.button} onPress={() => handleButtonPress(content.url)}>
               <Text style={styles.buttonText}>Leer más</Text>
             </TouchableOpacity>
