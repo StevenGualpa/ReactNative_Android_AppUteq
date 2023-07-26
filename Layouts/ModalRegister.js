@@ -7,12 +7,14 @@ import {
   Modal,
   StyleSheet,
   Dimensions,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
-const RegistroModal = ({ visible, onClose, onRegister }) => {
+const RegistroModal = ({ visible, onClose }) => {
   const [email, setEmail] = useState('');
   const [selectedType, setSelectedType] = useState('institucional');
   const [nombre, setNombre] = useState('');
@@ -21,7 +23,7 @@ const RegistroModal = ({ visible, onClose, onRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState('');
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!email.trim()) {
       setMessage('Por favor, ingresa un correo válido.');
       return;
@@ -47,14 +49,38 @@ const RegistroModal = ({ visible, onClose, onRegister }) => {
       }
     }
 
-    setMessage('');
-    onRegister(email, selectedType, nombre, apellido, clave);
-    setEmail('');
-    setSelectedType('institucional');
-    setNombre('');
-    setApellido('');
-    setClave('');
-    setShowPassword(false);
+    const data = {
+      email,
+      password: selectedType === 'publico' ? clave : '12345',
+      rol: selectedType === 'publico' ? 'Invitado' : 'institucional',
+    };
+
+    try {
+      const response = await axios.post('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/auth/register', data);
+      console.log('Registro exitoso:', response.data);
+      // Mostrar mensaje de éxito y limpiar campos
+      Alert.alert(
+        'Éxito',
+        'Registro exitoso.',
+        [
+          {
+            text: 'Aceptar',
+            onPress: () => {
+              setEmail('');
+              setSelectedType('institucional');
+              setNombre('');
+              setApellido('');
+              setClave('');
+              setShowPassword(false);
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    } catch (error) {
+      console.error('Error al registrar:', error);
+      setMessage('Error al registrar. Por favor, inténtalo de nuevo.');
+    }
   };
 
   const isValidName = (value) => {
