@@ -1,6 +1,6 @@
+
 import React, { useRef, useState } from 'react';
-import { StyleSheet, Text, View,TextInput, TouchableOpacity, ScrollView, Dimensions, Alert } from 'react-native';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Dimensions, Alert } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,16 +34,20 @@ export function Contenido() {
     }
 
     try {
-      const db = getFirestore();
-      const contenidoCollection = collection(db, 'contenidos');
       const nuevoContenido = {
         titulo,
         descripcion,
         url,
-        fecha: serverTimestamp() // Agrega la fecha actual al campo "fecha"
+        usuario_id: 1, // Asegúrate de actualizar esto con el id del usuario correspondiente
       };
-      await addDoc(contenidoCollection, nuevoContenido);
-      console.log('Datos guardados en Firebase:', nuevoContenido);
+
+      await fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/multimedia/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(nuevoContenido),
+      });
 
       // Mostrar el mensaje de éxito y limpiar los campos
       Alert.alert(
@@ -62,7 +66,7 @@ export function Contenido() {
         { cancelable: false }
       );
     } catch (error) {
-      console.error('Error al guardar los datos en Firebase:', error);
+      console.error('Error al guardar los datos:', error);
     }
   };
 
@@ -80,7 +84,7 @@ export function Contenido() {
         <Text style={styles.label}>Titulo</Text>
         <View style={styles.textBoxContainer}>
           <TextInput
-          placeholder="Ingrese el titulo"
+            placeholder="Ingrese el titulo"
             ref={tituloRef}
             style={styles.textBox}
             value={titulo}
@@ -90,7 +94,7 @@ export function Contenido() {
         <Text style={styles.label}>Descripción</Text>
         <View style={styles.textBoxContainer}>
           <TextInput
-           placeholder="Ingrese descripcion"
+            placeholder="Ingrese descripcion"
             ref={descripcionRef}
             multiline
             style={styles.textBoxDescri}
@@ -101,7 +105,7 @@ export function Contenido() {
         <Text style={styles.label}>Url</Text>
         <View style={styles.textBoxContainer}>
           <TextInput
-           placeholder="Ingrese el Url"
+            placeholder="Ingrese el Url"
             ref={urlRef}
             style={styles.textBoxUrl}
             value={url}

@@ -40,8 +40,44 @@ const LoginScreen = () => {
       Alert.alert('Correo inválido', 'Por favor, ingresa un correo válido con uno de los siguientes dominios: @uteq.edu.ec, @gmail.com, @hotmail.com, @yahoo.com, @outlook.com');
       return;
     }
-    navigation.navigate('NavigationBar');
+
+    // Aquí es donde se envía la solicitud HTTP POST al endpoint de inicio de sesión
+    fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: correo,
+        password: contraseña
+      })
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Aquí puedes manejar la respuesta del servidor. `data` es el objeto de respuesta.
+        // Por ejemplo, puedes verificar si la solicitud fue exitosa y navegar a otra pantalla si lo fue.
+        console.log('datos', data);
+     // Comprueba si el correo electrónico y la contraseña son los mismos que los enviados.
+        if (data.usuario.email === correo && data.usuario.password === contraseña) {
+          console.log('El correo electrónico y la contraseña coinciden con los enviados.');
+          navigation.navigate('NavigationBar');
+        } else {
+          console.log('El correo electrónico y la contraseña devueltos no coinciden con los enviados.');
+        }
+      })
+      .catch(error => {
+        // Aquí puedes manejar cualquier error que ocurra durante la solicitud.
+        console.error('Error en el JSON:', error);
+      });
   };
+
+
+
 
   const handleRegisterModal = () => {
     setModalVisible(true);

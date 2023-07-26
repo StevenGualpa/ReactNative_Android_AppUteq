@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, Modal, TextInput, RefreshControl, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, Modal, TextInput, Dimensions } from 'react-native';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
-import { getFirestore, collection, getDocs, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
-const ContentCard = ({ id, logo, title, description, url, fecha, onPressEdit, onDelete }) => {
+const ContentCard = ({ id, title, description, url, onPressEdit, onDelete }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedDescription, setEditedDescription] = useState(description);
@@ -44,15 +43,19 @@ const ContentCard = ({ id, logo, title, description, url, fecha, onPressEdit, on
           text: 'Sí',
           onPress: async () => {
             try {
-              const db = getFirestore();
-              const contentRef = doc(db, 'contenidos', id);
-
-              // Actualizar el documento con los datos editados
-              await updateDoc(contentRef, {
+              const data = {
                 titulo: editedTitle,
                 descripcion: editedDescription,
                 url: editedUrl,
-                fecha: serverTimestamp(), // Actualiza la fecha con la fecha y hora actual
+              };
+
+              // Actualizar el documento con los datos editados
+              await fetch(`https://noticias-uteq-4c62c24e7cc5.herokuapp.com/multimedia/${id}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
               });
 
               // Mostrar mensaje de éxito y actualizar la información en la lista
@@ -60,7 +63,7 @@ const ContentCard = ({ id, logo, title, description, url, fecha, onPressEdit, on
               setModalVisible(false);
               onPressEdit(id, editedTitle, editedDescription, editedUrl);
             } catch (error) {
-              console.error('Error al guardar los cambios en Firebase:', error);
+              console.error('Error al guardar los cambios:', error);
             }
           },
         },
@@ -105,28 +108,13 @@ const ContentCard = ({ id, logo, title, description, url, fecha, onPressEdit, on
   // Restringir la descripción a un máximo de 50 caracteres para mostrar en la tarjeta
   const truncatedDescription = description.length > 50 ? `${description.substring(0, 50)}...` : description;
 
-  // Función para formatear la fecha en formato legible
-  const formatDate = (date) => {
-    const options = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
-      weekday: 'long',
-    };
-    return date.toLocaleDateString('es-ES', options);
-  };
-
   return (
     <View style={styles.card}>
       <View style={styles.logoContainer}>
-        <Image source={logo} style={styles.logo} />
+        <Image source={require('./iconos/Tiktokicon.png')} style={styles.logo} />
         <Text style={styles.title}>{title}</Text>
       </View>
       <Text style={styles.description}>{truncatedDescription}</Text>
-      <Text style={styles.fecha}>{fecha && formatDate(fecha.toDate())}</Text>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={handleEdit}>
           <AntDesign name="edit" size={24} color="#46b41e" />
@@ -179,87 +167,68 @@ const ContentCard = ({ id, logo, title, description, url, fecha, onPressEdit, on
 
 const AppGestion = () => {
   const [contentData, setContentData] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const fetchContentData = async () => {
-      try {
-        const db = getFirestore();
-        const contentCollection = collection(db, 'contenidos');
-        const contentSnapshot = await getDocs(contentCollection);
-        const data = contentSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setContentData(data);
-      } catch (error) {
-        console.error('Error al obtener los contenidos de Firebase:', error);
-      }
-    };
-
-    fetchContentData();
+    fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/multimedia/')
+      .then((response) => response.json())
+      .then((data) =>
+        setContentData(
+          data.multimedias.map((item) => ({
+            id: item.ID,
+            titulo: item.titulo,
+            descripcion: item.descripcion,
+            url: item.url,
+          }))
+        )
+      )
+      .catch((error) => console.error('Error:', error));
   }, []);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
+  // Función para manejar la acción de editar contenido en la lista
+  const handleEditContent = (id, editedTitle, editedDescription, editedUrl) => {
+    // Actualizar la información en la lista de contenido
+    const updatedData = contentData.map((content) => {
+      if (content.id === id) {
+        return {
+          ...content,
+          titulo: editedTitle,
+          descripcion: editedDescription,
+          url: editedUrl,
+        };
+      }
+      return content;
+    });
 
-    try {
-      const db = getFirestore();
-      const contentCollection = collection(db, 'contenidos');
-      const contentSnapshot = await getDocs(contentCollection);
-      const data = contentSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setContentData(data);
-    } catch (error) {
-      console.error('Error al obtener los contenidos de Firebase:', error);
-    }
-
-    setRefreshing(false);
+    // Establecer la nueva información en el estado
+    setContentData(updatedData);
   };
-// Función para manejar la acción de editar contenido en la lista
-const handleEditContent = (id, editedTitle, editedDescription, editedUrl) => {
-  // Actualizar la información en la lista de contenido
-  const updatedData = contentData.map((content) => {
-    if (content.id === id) {
-      return {
-        ...content,
-        titulo: editedTitle,
-        descripcion: editedDescription,
-        url: editedUrl,
-      };
+
+  // Función para manejar la acción de eliminar contenido en la lista
+  const handleDeleteContent = async (id) => {
+    try {
+      // Eliminar el documento correspondiente al contenido
+      await fetch(`https://noticias-uteq-4c62c24e7cc5.herokuapp.com/multimedia/${id}`, {
+        method: 'DELETE',
+      });
+
+      // Actualizar la lista de contenido en el estado
+      setContentData((prevData) => prevData.filter((content) => content.id !== id));
+    } catch (error) {
+      console.error('Error al eliminar el contenido:', error);
     }
-    return content;
-  });
-
-  // Establecer la nueva información en el estado
-  setContentData(updatedData);
-};
-
-// Función para manejar la acción de eliminar contenido en la lista
-const handleDeleteContent = async (id) => {
-  try {
-    const db = getFirestore();
-    const contentRef = doc(db, 'contenidos', id);
-
-    // Eliminar el documento correspondiente al contenido de Firebase
-    await deleteDoc(contentRef);
-
-    // Actualizar la lista de contenido en el estado
-    setContentData((prevData) => prevData.filter((content) => content.id !== id));
-  } catch (error) {
-    console.error('Error al eliminar el contenido de Firebase:', error);
-  }
-};
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Gestión de contenido</Text>
-      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+      <ScrollView>
         {contentData.map((content) => (
           <ContentCard
             key={content.id}
             id={content.id}
-            logo={require('./iconos/Tiktokicon.png')}
             title={content.titulo}
             description={content.descripcion}
             url={content.url}
-            fecha={content.fecha}
             onPressEdit={handleEditContent}
             onDelete={handleDeleteContent}
           />
