@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Linking, RefreshControl, ActivityIndicator } from 'react-native';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import Icon from "react-native-vector-icons/FontAwesome";
 
 const ContentCard = () => {
@@ -14,14 +13,12 @@ const ContentCard = () => {
 
   const fetchContentData = async () => {
     try {
-      const db = getFirestore();
-      const contentCollection = collection(db, 'contenidos');
-      const contentSnapshot = await getDocs(contentCollection);
-      const data = contentSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setContentData(data);
+      const response = await fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/multimedia');
+      const data = await response.json();
+      setContentData(data.multimedias);
       setLoading(false);
     } catch (error) {
-      console.error('Error al obtener los contenidos de Firebase:', error);
+      console.error('Error al obtener los contenidos:', error);
       setLoading(false);
     }
   };
@@ -46,7 +43,7 @@ const ContentCard = () => {
         <ActivityIndicator size="large" color="green" style={styles.loadingIndicator} />
       ) : (
         contentData.map((content) => (
-          <View key={content.id} style={styles.card}>
+          <View key={content.ID} style={styles.card}>
             <View style={styles.logoContainer}>
               <Image source={require('./iconos/Tiktokicon.png')} style={styles.logo} />
               <Text numberOfLines={2} ellipsizeMode="tail" style={styles.title}>{content.titulo}</Text>
