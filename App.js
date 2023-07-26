@@ -1,17 +1,11 @@
-
-import { StyleSheet, Text, View } from 'react-native';
-import { LoginInic } from './Layouts/Login';//LOGIN 
-import { Prefer } from './Layouts/Preferencias';//PREFERENCIAS
 import AppNavigator from './Layouts/NavBarDown';//BARRA DE NAVEGACION INFERIOR
-import { Contenido } from './Layouts/Contenido';//CREACION DE CONTENIDO
-import ProfileScreen from './Layouts/Perfil';
-import NavigationBar from './Layouts/NavBarUp';
-import Home from './Layouts/Home';
-import AppGestion from './Layouts/GestionContenido';
-import MenuComple from './Layouts/Menu';
+import ChatScreen from './Layouts/ChatBox';
+import HomeUnre from './Layouts/HomeUnregister';
+import LoginInic from './Layouts/Login';
 import ContentCard from './Layouts/VisualizadorContenidos';
+import LoginScreen from './Layouts/InicioSesion';
 export default function App() {
   return (
-      <AppNavigator/>
+      <LoginScreen/>
   );
 }

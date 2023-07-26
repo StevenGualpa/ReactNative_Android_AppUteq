@@ -1,30 +1,30 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions, Text, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet, ScrollView, Dimensions, Text } from 'react-native';
 import ModalContenido from './ModalContenido';
 import ModalFacultades from './ModalFacu';
+import ModalUsuario from './ModalUsuario'
+import { BotonContenido, BotonFacultades, BotonChatBox, BotonUsuarios } from './Components/cardsmenu';
 
 const { width } = Dimensions.get('window');
+
 const MenuComple = () => {
-  const cardWidthMenu = (width - 70) / 2; // El ancho de cada tarjeta se ajusta según el tamaño de la pantalla
+  const cardWidthMenu = (width - 70) / 2;
   const [isModalVisible, setModalVisible] = useState(false);
   const [isModalFacultadesVisible, setModalFacultadesVisible] = useState(false);
+  const [isModalUsuarioVisible, setModalUsuarioVisible] = useState(false);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
-
+  const handleChatBoxPress = () => {
+    console.log('ChatBox presionado. Agregar lógica aquí.');
+  };
   const toggleModalFacultades = () => {
     setModalFacultadesVisible(!isModalFacultadesVisible);
   };
-
-  const Card = ({ iconName, title, onPress }) => (
-    <TouchableOpacity style={[styles.card, { width: cardWidthMenu, height: cardWidthMenu }]} onPress={onPress}>
-      <Ionicons name={iconName} size={60} color="#46b41e" />
-      <Text style={styles.title}>{title}</Text>
-    </TouchableOpacity>
-  );
-
+  const toggleModalUsuario = () => {
+    setModalUsuarioVisible(!isModalUsuarioVisible);
+  };
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
@@ -32,14 +32,25 @@ const MenuComple = () => {
       </View>
       <View style={styles.column}>
         <View style={styles.cardContainer}>
-          <Card iconName="md-document" title="Contenido" onPress={toggleModal} />
+          <BotonContenido onPress={toggleModal} />
         </View>
         <View style={styles.cardContainer}>
-          <Card iconName="md-school" title="Facultades" onPress={toggleModalFacultades} />
-        </View>
+          <BotonFacultades onPress={toggleModalFacultades} />
+        </View>        
       </View>
+      <View style={styles.column}>
+        <View style={styles.cardContainer}>
+          <BotonChatBox onPress={handleChatBoxPress} />
+        </View>
+        <View style={styles.cardContainer}>
+          <BotonUsuarios onPress={toggleModalUsuario} />
+        </View>
+                
+      </View>
+      
       <ModalContenido isVisible={isModalVisible} onClose={toggleModal} cardWidth={cardWidthMenu} />
       <ModalFacultades isVisible={isModalFacultadesVisible} onClose={toggleModalFacultades} />
+      <ModalUsuario isVisible={isModalUsuarioVisible} onClose={toggleModalUsuario} />
     </ScrollView>
   );
 };
@@ -66,22 +77,8 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     marginBottom: 20,
-    backgroundColor: '#f5f6fa', // Espacio vertical entre las tarjetas
-  },
-  card: {
-    backgroundColor: '#f2f2f2',
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#f5f6fa',
-    elevation: 10,
+    width:150,
     backgroundColor: '#f5f6fa',
-  },
-  title: {
-    marginTop: 10,
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });
 

@@ -6,31 +6,41 @@ const App = () => {
   const [nombre, setNombre] = useState('');
   const [mision, setMision] = useState('');
   const [vision, setVision] = useState('');
-
+ 
+  // Función para manejar la acción de guardar la facultad
   const handleGuardar = async () => {
+    // Validar campos vacíos
     if (nombre.trim() === '' || mision.trim() === '' || vision.trim() === '') {
       Alert.alert('Error', 'No puedes dejar campos en blanco');
       return;
     }
 
     try {
+      // Obtener la instancia de Firestore
       const db = getFirestore();
+
+      // Obtener la colección "Facultades"
       const facultadesCollection = collection(db, 'Facultades');
+
+      // Crear un nuevo objeto para la nueva facultad con la información ingresada
       const nuevaFacultad = {
         nombre,
         mision,
         vision,
         timestamp: serverTimestamp(),
       };
-      await addDoc(facultadesCollection, nuevaFacultad);
-      console.log('Facultad guardada en Firebase:', nuevaFacultad);
 
+      // Agregar el nuevo objeto a la colección "Facultades"
+      await addDoc(facultadesCollection, nuevaFacultad);
+
+      // Mostrar un mensaje de éxito y limpiar los campos
+      console.log('Facultad guardada en Firebase:', nuevaFacultad);
       setNombre('');
       setMision('');
       setVision('');
-
       Alert.alert('Éxito', 'Facultad guardada correctamente');
     } catch (error) {
+      // En caso de error, mostrar un mensaje de error en la consola
       console.error('Error al guardar la facultad en Firebase:', error);
     }
   };
@@ -42,34 +52,37 @@ const App = () => {
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.form}>
           <View style={styles.fieldContainer}>
-            <Text style={styles.fieldTitle}>Nombre:</Text>
+            <Text style={styles.fieldTitle}>Nombre</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Ingrese el nombre"
-              value={nombre}
-              onChangeText={setNombre}
+            style={styles.input}
+            placeholder="Ingrese el nombre"
+            value={nombre}
+            onChangeText={setNombre}
             />
           </View>
+          <Text style={styles.textSeparator} />
           <View style={styles.fieldContainer}>
-            <Text style={styles.fieldTitle}>Misión:</Text>
+            <Text style={styles.fieldTitle}>Misión</Text>
             <TextInput
-              style={[styles.input, styles.textarea]}
-              placeholder="Ingrese la misión"
-              multiline
-              value={mision}
-              onChangeText={setMision}
+            style={[styles.input, styles.textarea]}
+            placeholder="Ingrese la misión"
+            multiline
+            value={mision}
+            onChangeText={setMision}
             />
           </View>
+          <Text style={styles.textSeparator} />
           <View style={styles.fieldContainer}>
-            <Text style={styles.fieldTitle}>Visión:</Text>
+            <Text style={styles.fieldTitle}>Visión</Text>
             <TextInput
-              style={[styles.input, styles.textarea]}
-              placeholder="Ingrese la visión"
-              multiline
-              value={vision}
-              onChangeText={setVision}
+            style={[styles.input, styles.textarea]}
+            placeholder="Ingrese la visión"
+            multiline
+            value={vision}
+            onChangeText={setVision}
             />
           </View>
+          <Text style={styles.textSeparator} />
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button} onPress={handleGuardar}>
               <Text style={styles.buttonText}>Guardar</Text>
@@ -77,9 +90,8 @@ const App = () => {
           </View>
         </View>
       </ScrollView>
-      </View>
-     
-    </View>
+    </View> 
+  </View>
   );
 };
 
@@ -95,8 +107,8 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 30,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#46b41e',
+    marginBottom: 15,
+    color: '#46741e',
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -113,8 +125,9 @@ const styles = StyleSheet.create({
   fieldTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#46b41e',
+    color: 'black',
     marginBottom: 2,
+    marginTop: 4,
   },
   input: {
     backgroundColor: '#FFFFFF',
@@ -124,6 +137,7 @@ const styles = StyleSheet.create({
   },
   textarea: {
     height: 100,
+    textAlignVertical: 'top',
   },
   buttonContainer: {
     alignItems: 'center',
@@ -140,6 +154,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  textSeparator: {
+    height: 20, // Ajusta el valor para el espacio deseado entre los Text
   },
 });
 

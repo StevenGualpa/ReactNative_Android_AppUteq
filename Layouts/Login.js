@@ -19,12 +19,48 @@ import { getAuth, GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
 
 import { app } from './Components/FireBaseconfig';
 import { IniciarSesion, Google } from './Components/Botones';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const { width, height } = Dimensions.get('window');
+
+// Nuevo componente DropdownSelect
+const DropdownSelect = ({ options, selectedOption, onSelect }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleOptionSelect = (option) => {
+    setIsOpen(false);
+    onSelect(option);
+  };
+
+  return (
+    <View style={styles.dropdownContainer}>
+      <TouchableOpacity onPress={() => setIsOpen(!isOpen)} style={styles.dropdownHeader}>
+        <Text style={styles.dropdownTitle}>{selectedOption}</Text>
+        <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size={20} color="#ffffff" />
+      </TouchableOpacity>
+      {isOpen && (
+        <View style={styles.dropdownContent}>
+          <ScrollView>
+            {options.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.dropdownOption}
+                onPress={() => handleOptionSelect(option)}
+              >
+                <Text style={styles.dropdownOptionText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
+};
 
 export function LoginInic() {
   const [correo, setCorreo] = useState('');
   const [contraseña, setContraseña] = useState('');
+  const [selectedOption, setSelectedOption] = useState('Normal'); // Estado para controlar la opción seleccionada
 
   const handleGuestLogin = () => {
     Linking.openURL('https://sga.uteq.edu.ec/loginsga?ret=/');
@@ -76,35 +112,72 @@ export function LoginInic() {
           </View>
           <Text style={styles.title}>App</Text>
           <Text style={styles.subtitle}>Bienvenidos!</Text>
-          <TextInput
-            id='txtCorreo'
-            placeholder='Correo'
-            placeholderTextColor='white'
-            style={styles.textInput}
-            onChangeText={handleCorreoChange}
+
+          {/* Nuevo componente DropdownSelect */}
+          <DropdownSelect
+            options={['Admin', 'Normal']}
+            selectedOption={selectedOption}
+            onSelect={setSelectedOption}
           />
 
-          <TextInput
-            id='txtPassword'
-            placeholder='Contraseña'
-            placeholderTextColor='white'
-            style={styles.textInput}
-            secureTextEntry={true}
-            value={contraseña}
-            onChangeText={setContraseña}
-          />
-          <IniciarSesion onGuestLogin={handleGuestLogin} />
-          <Google correo={correo} onGoogleLogin={handleGoogleLogin} />
-          <TouchableOpacity onPress={handleGuestLogin}>
-            <Text style={styles.guestText}>Iniciar como invitado</Text>
-          </TouchableOpacity>
+          {/* Mostrar los elementos solo si NO se selecciona 'Admin' */}
+          {selectedOption !== 'Admin' && (
+            <>
+              <TextInput
+                id='txtCorreo'
+                placeholder='Correo'
+                placeholderTextColor='white'
+                style={styles.textInput}
+                onChangeText={handleCorreoChange}
+              />
+
+              <TextInput
+                id='txtPassword'
+                placeholder='Contraseña'
+                placeholderTextColor='white'
+                style={styles.textInput}
+                secureTextEntry={true}
+                value={contraseña}
+                onChangeText={setContraseña}
+              />
+
+              <Google correo={correo} onGoogleLogin={handleGoogleLogin} />
+
+              <TouchableOpacity onPress={handleGuestLogin}>
+                <Text style={styles.guestText}>Iniciar como invitado</Text>
+              </TouchableOpacity>
+            </>
+          )}
+          {selectedOption == 'Admin' && (
+            <>
+              <TextInput
+                id='txtCorreo'
+                placeholder='Correo'
+                placeholderTextColor='white'
+                style={styles.textInput}
+                onChangeText={handleCorreoChange}
+              />
+
+              <TextInput
+                id='txtPassword'
+                placeholder='Contraseña'
+                placeholderTextColor='white'
+                style={styles.textInput}
+                secureTextEntry={true}
+                value={contraseña}
+                onChangeText={setContraseña}
+              />
+
+              <IniciarSesion/>
+            </>
+          )}
+
           <StatusBar style='auto' />
         </ImageBackground>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -154,6 +227,38 @@ const styles = StyleSheet.create({
     color: 'white',
     marginTop: height * 0.05,
     textDecorationLine: 'underline',
+  },
+  dropdownContainer: {
+    width: width * 0.9,
+    marginTop: height * 0.03,
+    backgroundColor: '#46b41e',
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: '#46741e',
+  },
+  dropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+  },
+  dropdownTitle: {
+    fontSize: 16,
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  dropdownContent: {
+    maxHeight: 200,
+    paddingHorizontal: 10,
+  },
+  dropdownOption: {
+    paddingVertical: 12,
+  },
+  dropdownOptionText: {
+    fontSize: 16,
+    color: 'black',
   },
 });
 

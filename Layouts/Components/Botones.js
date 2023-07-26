@@ -1,6 +1,5 @@
-import React, {useCallback} from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Linking, Alert} from "react-native";
-import { LoginInic } from "../Login";
+import React from "react";
+import { Text, TouchableOpacity, StyleSheet, Alert} from "react-native";
 
 export function IniciarSesion() {
     return (
@@ -44,6 +43,8 @@ export function Cerrar(){
         </TouchableOpacity>
     )
 }
+
+
 
 const cerrarSesion=()=>{
    <IniciarSesion/>

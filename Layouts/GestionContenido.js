@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, Modal, TextInput, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, Modal, TextInput, RefreshControl, Dimensions } from 'react-native';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import { getFirestore, collection, getDocs, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -12,16 +12,20 @@ const ContentCard = ({ id, logo, title, description, url, fecha, onPressEdit, on
   const [originalDescription, setOriginalDescription] = useState(description);
   const [originalUrl, setOriginalUrl] = useState(url);
 
+  // Función para manejar la acción de editar contenido
   const handleEdit = () => {
     setModalVisible(true);
   };
 
+  // Función para manejar la acción de guardar los cambios al editar contenido
   const handleSave = async () => {
+    // Validar campos vacíos y URL válida
     if (!editedTitle.trim() || !editedDescription.trim() || !isValidUrl(editedUrl)) {
       Alert.alert('Error', 'Por favor, complete todos los campos y asegúrese de ingresar una URL válida.');
       return;
     }
 
+    // Mostrar confirmación antes de guardar los cambios
     Alert.alert(
       'Guardar cambios',
       '¿Desea guardar los cambios?',
@@ -42,12 +46,16 @@ const ContentCard = ({ id, logo, title, description, url, fecha, onPressEdit, on
             try {
               const db = getFirestore();
               const contentRef = doc(db, 'contenidos', id);
+
+              // Actualizar el documento con los datos editados
               await updateDoc(contentRef, {
                 titulo: editedTitle,
                 descripcion: editedDescription,
                 url: editedUrl,
                 fecha: serverTimestamp(), // Actualiza la fecha con la fecha y hora actual
               });
+
+              // Mostrar mensaje de éxito y actualizar la información en la lista
               Alert.alert('Los datos se modificaron correctamente');
               setModalVisible(false);
               onPressEdit(id, editedTitle, editedDescription, editedUrl);
@@ -60,7 +68,9 @@ const ContentCard = ({ id, logo, title, description, url, fecha, onPressEdit, on
     );
   };
 
+  // Función para manejar la acción de eliminar contenido
   const handleDelete = () => {
+    // Mostrar confirmación antes de eliminar el contenido
     Alert.alert(
       `¿Desea eliminar "${title}"?`,
       '',
@@ -77,15 +87,25 @@ const ContentCard = ({ id, logo, title, description, url, fecha, onPressEdit, on
     );
   };
 
-  const isValidUrl = (value) => {
-    // Expresión regular para validar una URL
-    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+  // Función para manejar la acción de cancelar la edición
+  const handleCancel = () => {
+    // Restaurar los valores originales y ocultar el modal de edición
+    setEditedTitle(title);
+    setEditedDescription(description);
+    setEditedUrl(url);
+    setModalVisible(false);
+  };
 
+  // Función para validar si una URL es válida
+  const isValidUrl = (value) => {
+    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
     return urlRegex.test(value);
   };
 
+  // Restringir la descripción a un máximo de 50 caracteres para mostrar en la tarjeta
   const truncatedDescription = description.length > 50 ? `${description.substring(0, 50)}...` : description;
 
+  // Función para formatear la fecha en formato legible
   const formatDate = (date) => {
     const options = {
       year: 'numeric',
@@ -142,10 +162,14 @@ const ContentCard = ({ id, logo, title, description, url, fecha, onPressEdit, on
               value={editedUrl}
               onChangeText={(text) => setEditedUrl(text)}
             />
-
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Guardar</Text>
-            </TouchableOpacity>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity style={styles.modalButton} onPress={handleSave}>
+                <Text style={styles.modalButtonText}>Guardar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButton} onPress={handleCancel}>
+                <Text style={styles.modalButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -188,33 +212,40 @@ const AppGestion = () => {
 
     setRefreshing(false);
   };
-
-  const handleEditContent = (id, editedTitle, editedDescription, editedUrl) => {
-    const updatedData = contentData.map((content) => {
-      if (content.id === id) {
-        return {
-          ...content,
-          titulo: editedTitle,
-          descripcion: editedDescription,
-          url: editedUrl,
-        };
-      }
-      return content;
-    });
-
-    setContentData(updatedData);
-  };
-
-  const handleDeleteContent = async (id) => {
-    try {
-      const db = getFirestore();
-      const contentRef = doc(db, 'contenidos', id);
-      await deleteDoc(contentRef);
-      setContentData((prevData) => prevData.filter((content) => content.id !== id));
-    } catch (error) {
-      console.error('Error al eliminar el contenido de Firebase:', error);
+// Función para manejar la acción de editar contenido en la lista
+const handleEditContent = (id, editedTitle, editedDescription, editedUrl) => {
+  // Actualizar la información en la lista de contenido
+  const updatedData = contentData.map((content) => {
+    if (content.id === id) {
+      return {
+        ...content,
+        titulo: editedTitle,
+        descripcion: editedDescription,
+        url: editedUrl,
+      };
     }
-  };
+    return content;
+  });
+
+  // Establecer la nueva información en el estado
+  setContentData(updatedData);
+};
+
+// Función para manejar la acción de eliminar contenido en la lista
+const handleDeleteContent = async (id) => {
+  try {
+    const db = getFirestore();
+    const contentRef = doc(db, 'contenidos', id);
+
+    // Eliminar el documento correspondiente al contenido de Firebase
+    await deleteDoc(contentRef);
+
+    // Actualizar la lista de contenido en el estado
+    setContentData((prevData) => prevData.filter((content) => content.id !== id));
+  } catch (error) {
+    console.error('Error al eliminar el contenido de Firebase:', error);
+  }
+};
 
   return (
     <View style={styles.container}>
@@ -268,9 +299,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
-    marginTop: -20,
-    marginBottom: 5,
+
   },
   logo: {
     width: 80,
@@ -280,10 +309,13 @@ const styles = StyleSheet.create({
     marginBottom: -18,
   },
   title: {
+    flex: 1, // Permite que el título tome el espacio restante en la misma fila del logo
     fontSize: 18,
     fontWeight: 'bold',
   },
   description: {
+    flex: 1,
+    marginVertical: 12,
     fontSize: 16,
     marginBottom: 10,
   },
@@ -294,13 +326,27 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 23,
   },
   button: {
     marginLeft: 10,
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 5,
+  },
+  modalButton: {
+    backgroundColor: '#46b41e',
+    borderRadius: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginHorizontal: 10,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
   },
   modalContainer: {
     flex: 1,
@@ -330,6 +376,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  modalButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

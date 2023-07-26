@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, Alert, Modal, TextInput } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons,AntDesign, FontAwesome } from '@expo/vector-icons';
+
 import { getFirestore, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore/lite';
 
 const { width } = Dimensions.get('window');
@@ -13,11 +14,14 @@ const FacultadCard = ({ id, title, mision, vision }) => {
   const [editedMision, setEditedMision] = useState(mision);
   const [editedVision, setEditedVision] = useState(vision);
 
+  // Función para manejar la acción de editar la facultad
   const handleEdit = () => {
     setModalVisible(true);
   };
 
+  // Función para manejar la acción de guardar los cambios al editar la facultad
   const handleSave = async () => {
+    // Validar campos vacíos
     if (!editedTitle.trim() || !editedMision.trim() || !editedVision.trim()) {
       Alert.alert('Error', 'Por favor, complete todos los campos');
       return;
@@ -27,11 +31,15 @@ const FacultadCard = ({ id, title, mision, vision }) => {
       const db = getFirestore();
       const facultadesCollection = collection(db, 'Facultades');
       const facultadDoc = doc(facultadesCollection, id);
+
+      // Actualizar el documento con los datos editados
       await updateDoc(facultadDoc, {
         nombre: editedTitle,
         mision: editedMision,
         vision: editedVision,
       });
+
+      // Mostrar mensaje de éxito y ocultar el modal de edición
       Alert.alert('Facultad actualizada', 'Los datos de la facultad se han actualizado correctamente');
       setModalVisible(false);
     } catch (error) {
@@ -39,7 +47,9 @@ const FacultadCard = ({ id, title, mision, vision }) => {
     }
   };
 
+  // Función para manejar la acción de eliminar la facultad
   const handleDelete = async () => {
+    // Mostrar confirmación antes de eliminar la facultad
     Alert.alert(
       'Eliminar Facultad',
       `¿Estás seguro de eliminar la facultad "${title}"?`,
@@ -55,7 +65,11 @@ const FacultadCard = ({ id, title, mision, vision }) => {
               const db = getFirestore();
               const facultadesCollection = collection(db, 'Facultades');
               const facultadDoc = doc(facultadesCollection, id);
+
+              // Eliminar el documento correspondiente a la facultad de Firebase
               await deleteDoc(facultadDoc);
+
+              // Mostrar mensaje de éxito
               Alert.alert('Facultad eliminada', `Facultad "${title}" eliminada correctamente`);
             } catch (error) {
               console.error('Error al eliminar la facultad:', error);
@@ -66,7 +80,9 @@ const FacultadCard = ({ id, title, mision, vision }) => {
     );
   };
 
+  // Función para manejar la acción de cancelar la edición
   const handleCancel = () => {
+    // Restaurar los valores originales y ocultar el modal de edición
     setEditedTitle(title);
     setEditedMision(mision);
     setEditedVision(vision);
@@ -78,12 +94,10 @@ const FacultadCard = ({ id, title, mision, vision }) => {
       <Text style={styles.title}>{title}</Text>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={handleEdit}>
-          <Ionicons name="pencil" size={24} color="#FFFFFF" />
-          <Text style={styles.buttonText}>Editar</Text>
+          < AntDesign name="edit" size={24} color="#46b41e" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleDelete}>
-          <Ionicons name="trash" size={24} color="#FFFFFF" />
-          <Text style={styles.buttonText}>Eliminar</Text>
+          <FontAwesome name="trash" size={24} color="red" />
         </TouchableOpacity>
       </View>
 
@@ -98,7 +112,7 @@ const FacultadCard = ({ id, title, mision, vision }) => {
               value={editedTitle}
               onChangeText={(text) => setEditedTitle(text)}
             />
-            <Text style={styles.modalLabel}>Misión:</Text>
+            <Text style={styles.modalLabel} >Misión:</Text>
             <TextInput
               style={styles.modalInput}
               multiline
@@ -206,12 +220,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#46b41e',
-    borderRadius: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    marginLeft: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 5,
   },
   buttonText: {
     color: '#FFFFFF',

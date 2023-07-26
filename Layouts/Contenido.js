@@ -1,8 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { StyleSheet, Text, View, ImageBackground, Image, TextInput, TouchableOpacity, ScrollView, Dimensions, Alert } from 'react-native';
-import { Publicar } from './Components/Botones';
+import { StyleSheet, Text, View,TextInput, TouchableOpacity, ScrollView, Dimensions, Alert } from 'react-native';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -82,6 +80,7 @@ export function Contenido() {
         <Text style={styles.label}>Titulo</Text>
         <View style={styles.textBoxContainer}>
           <TextInput
+          placeholder="Ingrese el titulo"
             ref={tituloRef}
             style={styles.textBox}
             value={titulo}
@@ -91,6 +90,7 @@ export function Contenido() {
         <Text style={styles.label}>Descripción</Text>
         <View style={styles.textBoxContainer}>
           <TextInput
+           placeholder="Ingrese descripcion"
             ref={descripcionRef}
             multiline
             style={styles.textBoxDescri}
@@ -101,6 +101,7 @@ export function Contenido() {
         <Text style={styles.label}>Url</Text>
         <View style={styles.textBoxContainer}>
           <TextInput
+           placeholder="Ingrese el Url"
             ref={urlRef}
             style={styles.textBoxUrl}
             value={url}
@@ -139,18 +140,19 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     width: width * 0.9,
-    marginTop: height * 0.04,
+    marginTop: height * 0.002,
   },
   label: {
     fontSize: width * 0.05,
     color: 'black',
     fontWeight: 'bold',
-    marginBottom: height * 0.01,
+    marginBottom: height * 0.02,
+    marginTop: height*0.03,
   },
   textBoxContainer: {
     backgroundColor: 'white',
-    borderRadius: width * 0.1,
-    marginTop: height * 0.01,
+    borderRadius: 7,
+    marginTop: height * 0.001,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

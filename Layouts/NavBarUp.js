@@ -5,6 +5,39 @@ import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 
 const { width, height } = Dimensions.get('window');
 
+const Dropdown = ({ title, options, onSelect }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleOptionSelect = (option) => {
+    setIsOpen(false);
+    onSelect(option);
+  };
+
+  return (
+    <View style={styles.dropdownContainer}>
+      <TouchableOpacity onPress={() => setIsOpen(!isOpen)} style={styles.dropdownHeader}>
+        <Text style={styles.dropdownTitle}>{title}</Text>
+        <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size={20} color="#ffffff" />
+      </TouchableOpacity>
+      {isOpen && (
+        <View style={styles.dropdownContent}>
+          <ScrollView>
+            {options.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.dropdownOption}
+                onPress={() => handleOptionSelect(option)}
+              >
+                <Text style={styles.dropdownOptionText}>{option.nombre}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
+};
+
 const NavigationBar = () => {
   const [searchText, setSearchText] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -87,19 +120,10 @@ const NavigationBar = () => {
             <Pressable onPress={handleMenu} style={styles.closeButton}>
               <Icon name="times" size={20} color="#ffffff" />
             </Pressable>
-            <ScrollView style={styles.menuOptionsContainer}>
-              <View style={styles.menuOptions}>
-                {facultades.map((facultad, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.menuItemContainer}
-                    onPress={() => handleFacultadSelect(facultad)}
-                  >
-                    <Text style={styles.menuItem}>{facultad.nombre}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
+
+            <View style={styles.menuOptionsContainer}>
+              <Dropdown title=" Facultades " options={facultades} onSelect={handleFacultadSelect} />
+            </View>
           </ImageBackground>
         </Modal>
 
@@ -121,7 +145,6 @@ const NavigationBar = () => {
         </View>
       </View>
 
-      {/* Modal de búsqueda */}
       <Modal visible={isSearchModalOpen} animationType="slide" transparent={true}>
         <View style={styles.searchModalContainer}>
           <TouchableOpacity onPress={handleCloseSearchModal} style={styles.closeSearchModalButton}>
@@ -135,7 +158,6 @@ const NavigationBar = () => {
         </View>
       </Modal>
 
-      {/* Modal de Facultad */}
       <Modal visible={selectedFacultad !== null} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <ImageBackground source={require('./src/Fondo.jpg')} style={styles.modalBackground}>
@@ -146,6 +168,7 @@ const NavigationBar = () => {
     </>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -213,8 +236,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   menuOptionsContainer: {
-    flex: 1,
-    paddingTop: height * 0.07,
+    flex:1,
   },
   menuOptions: {
     alignItems: 'flex-start',
@@ -295,6 +317,37 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  dropdownContainer: {
+    width:width*0.75,
+    backgroundColor: '#46b41e',
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth:3,
+    borderColor:'#46741e',
+  },
+  dropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+  },
+  dropdownTitle: {
+    fontSize: 16,
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  dropdownContent: {
+    maxHeight: 200,
+    paddingHorizontal: 10,
+  },
+  dropdownOption: {
+    paddingVertical: 12,
+  },
+  dropdownOptionText: {
+    fontSize: 16,
+    color: 'black',
   },
 });
 

@@ -1,20 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Linking,RefreshControl  } from 'react-native';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import VisualizadorContenidos from './VisualizadorContenidos';
 import axios from 'axios';
-import { useNavigation } from "@react-navigation/native";
 
 
-const Home = () => {
-  const navigation = useNavigation();
-
-  //declaracion de estados
+const HomeUnre = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [contentData, setContentData] = useState([]);
-  const [magazineData, setMagazineData] = useState([]);
   const [noticeData, setnoticeData] = useState([]);
   
-  // Función para obtener los contenidos desde Firebase
   useEffect(() => {
     const fetchContentData = async () => {
       
@@ -31,22 +26,8 @@ const Home = () => {
 
     fetchContentData();
   }, []);
-  // Función para obtener los datos de las revistas desde la API
-  const fetchMagazineData = async () => {
-    try {
-      const response = await axios.get('https://my-json-server.typicode.com/StevenGualpa/Api_Historial/Revistas'); // La ruta de tu API
-      setMagazineData(response.data);
-    } catch (error) {
-      console.error('Error al obtener los contenidos de la API:', error);
-    }
-  };
 
-  useEffect(() => {
-    fetchMagazineData();
-  }, []);
-  
 
-  // Función para obtener los datos de las noticias desde la API
   const fetchnoticeData = async () => {
     try {
       const response = await axios.get('https://my-json-server.typicode.com/StevenGualpa/Api_Historial/Noticias'); // La ruta de tu API
@@ -59,12 +40,12 @@ const Home = () => {
   useEffect(() => {
     fetchnoticeData();
   }, []);
-   
-  // Función para manejar la acción de presionar un botón
+     
+
   const handleButtonPress = (link) => {
     Linking.openURL(link);
   };
-// Función para manejar el evento de "pull to refresh" en la lista de contenidos
+  
   const onRefresh = async () => {
     setRefreshing(true);
   
@@ -81,34 +62,21 @@ const Home = () => {
     setRefreshing(false);
   };
   
-  // Función para manejar la acción de presionar una sección
+
   const handleSectionPress = (section) => {
-    if (section === 'Noticias') {
-      navigation.navigate("Noticias");
-    } else {
-      if (section === 'Revistas') {
-        navigation.navigate("Revistas");
-      } else {
-        if (section === 'Contenido') {
-          navigation.navigate("Contenido");
-        } else {
-          console.log(`Redirigiendo a la sección: ${section}`);
-        } 
-      }  
-    } 
-    
+    // Lógica para redirigir a la interfaz correspondiente según la sección
+    console.log(`Redirigiendo a la sección: ${section}`);
   };
-// Función para renderizar las tarjetas de noticias
-  const renderNewsCards = () => {
-    const visibleNews = noticeData.slice(0, 5); // Mostrar solo los primeros 5 elementos
+
+  const renderNewsCards =() => {
     return (
       <ScrollView horizontal>
-        {visibleNews.map((content) => (
+        {noticeData.map((content) => (
           <View key={content.Titulo} style={styles.card}>
-            <View style={styles.logoContainer}>
+          <View style={styles.logoContainer}>
               <Image source={{ uri: content.Portada }} style={styles.logo} />
             </View>
-            <Text style={styles.title} numberOfLines={2}>{content.Titulo}</Text>
+            <Text style={styles.title} numberOfLines={2} >{content.Titulo}</Text>
             <TouchableOpacity style={styles.button} onPress={() => handleButtonPress(content.url)}>
               <Text style={styles.buttonText}>Leer más</Text>
             </TouchableOpacity>
@@ -117,37 +85,16 @@ const Home = () => {
       </ScrollView>
     );
   };
-// Función para renderizar las tarjetas de noticias
-  const renderMagazineCards = () => {
-    const visibleMagazines = magazineData.slice(0, 5); // Mostrar solo los primeros 5 elementos
-    return (
-      <ScrollView horizontal>
-        {visibleMagazines.map((content) => (
-          <View key={content.Titulo} style={styles.card}>
-            <View style={styles.logoContainer}>
-              <Image source={{ uri: content.Portada }} style={styles.logo} />
-            </View>
-            <Text style={styles.title} numberOfLines={2}>{content.Titulo}</Text>
-            <Text style={styles.category}>{content.date}</Text>
-            <TouchableOpacity style={styles.button} onPress={() => handleButtonPress(content.url)}>
-              <Text style={styles.buttonText}>Leer más</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
-    );
-  };
-    // Función para renderizar las tarjetas de contenido
+
   const renderContentCards = () => {
-    const visibleContent = contentData.slice(0, 5); // Mostrar solo los primeros 5 elementos
     return (
-      <ScrollView horizontal>
-        {visibleContent.map((content) => (
+      <ScrollView horizontal >
+        {contentData.map((content) => (
           <View key={content.id} style={[styles.card, styles.contentCard]}>
             <View style={styles.contentContainer}>
               <Image source={require('./iconos/Tiktokicon.png')} style={styles.contentImage} />
             </View>
-            <Text style={styles.title} numberOfLines={1}>{content.titulo}</Text>
+            <Text style={styles.title}numberOfLines={1}>{content.titulo}</Text>
             <TouchableOpacity
               style={styles.button}
               onPress={() => handleButtonPress(content.url)}
@@ -167,12 +114,7 @@ const Home = () => {
       </TouchableOpacity>
       {renderNewsCards()}
 
-      <TouchableOpacity style={styles.sectionHeader} onPress={() => handleSectionPress('Revistas')}>
-        <Text style={styles.sectionTitle}>Revistas</Text>
-      </TouchableOpacity>
-      {renderMagazineCards()}
-
-      <TouchableOpacity style={styles.sectionHeader} onPress={() => handleSectionPress('Contenido')}>
+      <TouchableOpacity style={styles.sectionHeader} onPress={() => {ContentCard}}>
         <Text style={styles.sectionTitle}>Contenido</Text>
       </TouchableOpacity>
       {renderContentCards()}
@@ -268,4 +210,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Home;
+export default HomeUnre;
