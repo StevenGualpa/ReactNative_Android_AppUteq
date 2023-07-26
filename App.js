@@ -6,6 +6,6 @@ import ContentCard from './Layouts/VisualizadorContenidos';
 import LoginScreen from './Layouts/InicioSesion';
 export default function App() {
   return (
-      <LoginScreen/>
+      <AppNavigator/>
   );
 }

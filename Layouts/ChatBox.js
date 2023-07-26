@@ -12,7 +12,7 @@ const ChatScreen = () => {
   const [recognizedText, setRecognizedText] = useState('');
   const [isMessageMode, setIsMessageMode] = useState(true);
   const flatListRef = useRef();
-
+  
   useEffect(() => {
     // Configurar el evento de reconocimiento de voz al montar el componente
     Voice.onSpeechResults = onSpeechResults;
@@ -117,7 +117,7 @@ const ChatScreen = () => {
       {/* Animación de Lottie */}
       <LottieView
         style={styles.lottieLogo}
-        source={require('./src/animation_lkeevcbv.json')}
+        source={require('./src/animation_lkj5w7te.json')}
         autoPlay
         loop
       />

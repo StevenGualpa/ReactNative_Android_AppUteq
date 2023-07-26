@@ -4,7 +4,7 @@ import ModalContenido from './ModalContenido';
 import ModalFacultades from './ModalFacu';
 import ModalUsuario from './ModalUsuario'
 import { BotonContenido, BotonFacultades, BotonChatBox, BotonUsuarios } from './Components/cardsmenu';
-
+import { useNavigation } from "@react-navigation/native";
 const { width } = Dimensions.get('window');
 
 const MenuComple = () => {
@@ -12,12 +12,12 @@ const MenuComple = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isModalFacultadesVisible, setModalFacultadesVisible] = useState(false);
   const [isModalUsuarioVisible, setModalUsuarioVisible] = useState(false);
-
+  const navigation = useNavigation();
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
   const handleChatBoxPress = () => {
-    console.log('ChatBox presionado. Agregar lógica aquí.');
+    navigation.navigate("ChatBox");
   };
   const toggleModalFacultades = () => {
     setModalFacultadesVisible(!isModalFacultadesVisible);

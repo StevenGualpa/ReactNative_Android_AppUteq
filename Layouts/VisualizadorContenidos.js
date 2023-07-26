@@ -41,7 +41,7 @@ const ContentCard = () => {
       contentContainerStyle={styles.container}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <Text style={styles.header}>Visualizador de contenido</Text>
+      <Text style={styles.header}>Vista de contenido</Text>
       {loading ? (
         <ActivityIndicator size="large" color="green" style={styles.loadingIndicator} />
       ) : (
@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   title: {
+    flex: 1, // Permite que el título tome el espacio restante en la misma fila del logo
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -109,6 +110,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     marginLeft: 5,
+    
   },
   button: {
     backgroundColor: '#46b41e',
@@ -117,9 +119,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
     marginTop: 10,
+    justifyContent: 'center',
     flexDirection: 'row',
   },
   description: {
+    flex: 1,
+    marginVertical: 12,
     fontSize: 16,
     marginBottom: 10,
   },

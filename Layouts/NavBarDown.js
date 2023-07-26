@@ -3,19 +3,41 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Icon from "react-native-vector-icons/FontAwesome";
-import AppGestion from "./GestionContenido";
 import { Prefer } from "./Preferencias";
 import { LoginInic } from "./Login";
+import LoginScreen from "./InicioSesion";
 import ContentCard from "./VisualizadorContenidos";
 import ViewNotice from "./VisualizarNoticias";
 import Home from "./Home";
 import NavigationBar from "./NavBarUp";
 import MenuComple from "./Menu";
 import ViewRevista from './VisualizadorRevista'
+import ChatScreen from "./ChatBox";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const stack2=createStackNavigator();
 
+function Chatboxito(){
+  return (
+    <stack2.Navigator>
+      <stack2.Screen
+        name="Menu"
+        component={MenuComple}
+        options={{
+          headerShown:false,
+        }}
+      />
+      <stack2.Screen
+        name="ChatBox"
+        component={ChatScreen}
+        options={{
+          headerShown:false,
+        }}
+      />
+    </stack2.Navigator>
+  );
+}
 function HomeStack() {
   return (
     <Stack.Navigator>
@@ -33,7 +55,6 @@ function HomeStack() {
           headerShown: false,
         }}
       />
-      {/* Agregamos la pantalla de ViewRevista al stack */}
       <Stack.Screen
         name="Revistas"
         component={ViewRevista}
@@ -92,7 +113,7 @@ function MyTabs() {
         />
         <Tab.Screen
           name="Menu"
-          component={MenuComple}
+          component={Chatboxito}
           options={{
             headerShown: false,
           }}
@@ -105,7 +126,10 @@ function MyTabs() {
 export default function Navigation() {
   return (
     <NavigationContainer>
-      <MyTabs />
-    </NavigationContainer>
+    <Stack.Navigator headerMode="none">
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="NavigationBar" component={MyTabs} />
+    </Stack.Navigator>
+  </NavigationContainer>
   );
 }

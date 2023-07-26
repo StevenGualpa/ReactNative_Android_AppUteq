@@ -13,15 +13,18 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import RegistroModal from './ModalRegister';
+import { useNavigation } from '@react-navigation/native';
 const { width, height } = Dimensions.get('window');
 
 const LoginScreen = () => {
+  const navigation = useNavigation();
   const [correo, setCorreo] = useState('');
   const [contraseña, setContraseña] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isButtonInverted, setButtonInverted] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false); // Estado para controlar la visibilidad del modal
 
+  
   const handleLogin = () => {
     if (!correo.trim() || !contraseña.trim()) {
       Alert.alert('Campos vacíos', 'Por favor, completa todos los campos.');
@@ -37,6 +40,7 @@ const LoginScreen = () => {
       Alert.alert('Correo inválido', 'Por favor, ingresa un correo válido con uno de los siguientes dominios: @uteq.edu.ec, @gmail.com, @hotmail.com, @yahoo.com, @outlook.com');
       return;
     }
+    navigation.navigate('NavigationBar');
   };
 
   const handleRegisterModal = () => {

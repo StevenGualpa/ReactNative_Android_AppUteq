@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions, FlatList, RefreshControl } from 'react-native';
 import { CheckBox } from 'react-native-elements';
 import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 
@@ -9,22 +9,23 @@ const windowHeight = Dimensions.get('window').height;
 export function Prefer() {
   const [checkedItems, setCheckedItems] = useState([]);
   const [facultades, setFacultades] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const fetchFacultades = async () => {
-      try {
-        const db = getFirestore();
-        const facultadesCollection = collection(db, 'Facultades');
-        const facultadesSnapshot = await getDocs(facultadesCollection);
-        const facultadesData = facultadesSnapshot.docs.map((doc) => doc.data().nombre);
-        setFacultades(facultadesData);
-      } catch (error) {
-        console.error('Error al obtener las facultades:', error);
-      }
-    };
-
-    fetchFacultades();
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const db = getFirestore();
+      const facultadesCollection = collection(db, 'Facultades');
+      const facultadesSnapshot = await getDocs(facultadesCollection);
+      const facultadesData = facultadesSnapshot.docs.map((doc) => doc.data().nombre);
+      setFacultades(facultadesData);
+    } catch (error) {
+      console.error('Error al obtener las facultades:', error);
+    }
+  };
 
   const handleCheckboxChange = (item) => {
     if (checkedItems.includes(item)) {
@@ -36,7 +37,7 @@ export function Prefer() {
     }
   };
 
-  const renderCheckbox = (item) => {
+  const renderCheckbox = ({ item }) => {
     const isChecked = checkedItems.includes(item);
     return (
       <CheckBox
@@ -50,12 +51,26 @@ export function Prefer() {
     );
   };
 
+  const onRefresh = () => {
+    setRefreshing(true);
+    // Realiza aquí las acciones que deseas hacer durante el refresco
+    fetchData(); // Por ejemplo, puedes volver a cargar los datos
+    setRefreshing(false);
+  };
+
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Preferencias</Text>
-      <ScrollView contentContainerStyle={styles.checkboxContainer}>
-        {facultades.map((facultad) => renderCheckbox(facultad))}
-      </ScrollView>
+      <FlatList
+        data={facultades}
+        renderItem={renderCheckbox}
+        keyExtractor={(item) => item}
+        contentContainerStyle={styles.checkboxContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      />
       <TouchableOpacity
         style={[styles.button, { backgroundColor: '#46b41e' }]}
         onPress={() => console.log('Opciones seleccionadas:', checkedItems)}

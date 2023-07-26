@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Dimensions, Modal, Pressable, ImageBackground, StatusBar, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Dimensions, Modal, Pressable,Linking, ImageBackground, StatusBar, Image, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
+import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
@@ -39,12 +40,15 @@ const Dropdown = ({ title, options, onSelect }) => {
 };
 
 const NavigationBar = () => {
+  
   const [searchText, setSearchText] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [facultades, setFacultades] = useState([]);
   const [selectedFacultad, setSelectedFacultad] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [noResultsFound, setNoResultsFound] = useState(false); // Variable de estado para controlar si no se encontraron resultados
 
   useEffect(() => {
     const fetchFacultades = async () => {
@@ -62,12 +66,28 @@ const NavigationBar = () => {
     fetchFacultades();
   }, []);
 
-  const handleSearch = () => {
+  const handlelinkview=(link)=>{
+    Linking.openURL(link);
+  }
+  const handleSearch = async () => {
+    if (!searchText.trim()) {
+      return;
+    }
+
     console.log('Buscar:', searchText);
+    // Cerrar cualquier modal abierto antes de abrir el modal de búsqueda de resultados
+    setIsModalOpen(false);
+
     // Simulación de búsqueda con datos de ejemplo
-    const results = ['Resultado 1', 'Resultado 2', 'Resultado 3'];
-    setSearchResults(results);
-    setIsSearchModalOpen(true);
+    try {
+      const response = await axios.get('https://my-json-server.typicode.com/StevenGualpa/Api_Historial/Revistas');
+      setSearchResults(response.data);
+      setIsSearchModalOpen(true);
+      setIsModalOpen(true); // Abrir el modal de búsqueda de resultados
+      
+    } catch (error) {
+      console.error('Error al realizar la búsqueda:', error);
+    }
   };
 
   const handleMenu = () => {
@@ -79,6 +99,7 @@ const NavigationBar = () => {
     setSearchResults([]);
     setSearchText('');
   };
+  
 
   const handleFacultadSelect = (facultad) => {
     setSelectedFacultad(facultad);
@@ -87,6 +108,7 @@ const NavigationBar = () => {
 
   const handleModalClose = () => {
     setSelectedFacultad(null);
+    setIsModalOpen(false); // Cerrar cualquier modal abierto
   };
 
   const renderModalContent = () => {
@@ -104,8 +126,40 @@ const NavigationBar = () => {
         </View>
       );
     }
-
-    return null;
+    else if (searchResults.length === 0) {
+      return (
+        <View style={styles.searchResultsContainer}>
+          <Text style={styles.modalTitle}>No se encontraron resultados</Text>
+          <TouchableOpacity style={styles.modalCloseButton} onPress={handleCloseSearchModal}>
+            <Text style={styles.modalCloseButtonText}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    } else {
+      return (
+        <ScrollView style={styles.searchResultsContainer}>
+          {searchResults.map((result) => (
+            <TouchableOpacity
+              key={result.id}
+              style={styles.searchResultCard} // Utilizamos el estilo de tarjeta
+              onPress={() => {
+                if (result.url) {
+                  handlelinkview(result.url);
+                }
+              }}
+            >
+              <View style={styles.logoContainer}>
+                <Image source={{ uri: result.Portada }} style={styles.logo} />
+              </View>
+              <Text style={styles.searchResultItem}>{result.Titulo}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity onPress={handleCloseSearchModal} style={styles.closeSearchModalButton}>
+            <Icon name="times" size={20} color="#ffffff" />
+          </TouchableOpacity>
+        </ScrollView>
+      );
+    }
   };
 
   return (
@@ -139,26 +193,27 @@ const NavigationBar = () => {
             value={searchText}
           />
 
-          <TouchableOpacity onPress={handleSearch} style={[styles.searchButton, { backgroundColor: 'green' }]}>
+          <TouchableOpacity
+            onPress={handleSearch}
+            style={[styles.searchButton, { backgroundColor: 'green' }]}
+            disabled={!searchText.trim()} // Deshabilitar el botón si el campo está vacío
+          >
             <Icon name="search" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
       </View>
 
-      <Modal visible={isSearchModalOpen} animationType="slide" transparent={true}>
+      <Modal visible={isSearchModalOpen && isModalOpen} animationType="slide" transparent={true}>
         <View style={styles.searchModalContainer}>
+          {renderModalContent()}
           <TouchableOpacity onPress={handleCloseSearchModal} style={styles.closeSearchModalButton}>
             <Icon name="times" size={20} color="#ffffff" />
           </TouchableOpacity>
-          <View style={styles.searchResultsContainer}>
-            {searchResults.map((result, index) => (
-              <Text key={index} style={styles.searchResultItem}>{result}</Text>
-            ))}
-          </View>
+          
         </View>
       </Modal>
 
-      <Modal visible={selectedFacultad !== null} animationType="slide" transparent={true}>
+      <Modal visible={selectedFacultad !== null && isModalOpen} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <ImageBackground source={require('./src/Fondo.jpg')} style={styles.modalBackground}>
             {renderModalContent()}
@@ -249,7 +304,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'white',
   },
-  searchModalContainer: {
+  searchModalContainer: {    
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -265,8 +320,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 10,
     padding: 20,
-    width: width * 0.8,
-    maxHeight: height * 0.6,
+    width: width * 0.95,
+    maxHeight: height * 0.8,
   },
   searchResultItem: {
     fontSize: 18,
@@ -287,9 +342,9 @@ const styles = StyleSheet.create({
   },
   modalContentContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 10,
+    borderRadius: 50,
     padding: 20,
-    width: width * 0.8,
+    width: width * 1,
   },
   modalTitle: {
     fontSize: 24,
@@ -348,6 +403,59 @@ const styles = StyleSheet.create({
   dropdownOptionText: {
     fontSize: 16,
     color: 'black',
+  },
+  searchResultsScrollView: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchResultItemContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  searchResultImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 8,
+    resizeMode: 'cover',
+  },
+  searchResultItemTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  searchResultButton: {
+    marginTop: 10,
+    backgroundColor: '#46b41e',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  searchResultButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  searchResultCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  logo: {
+    width: 165,
+    height: 135,    
+    borderRadius:15,
+    resizeMode:'stretch'
   },
 });
 
