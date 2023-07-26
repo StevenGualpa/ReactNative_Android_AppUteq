@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Linking, Dimensions } from 'react-native';
+import axios from 'axios';
 
 const { width } = Dimensions.get('window');
 const cardWidth = width * 0.9;
@@ -11,12 +12,11 @@ const NewsCard = ({ image, title, category, url }) => {
 
   return (
     <View style={styles.card}>
-      <Image source={image} style={styles.image} />
+      <Image source={{ uri: image }} style={styles.image} />
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.category}>{category}</Text>
       <TouchableOpacity style={styles.button} onPress={handleReadMore}>
         <View style={styles.buttonContent}>
-          <Image source={require('./iconos/leer mas.png')} style={styles.buttonIcon} />
           <Text style={styles.buttonText}>Ver más</Text>
         </View>
       </TouchableOpacity>
@@ -28,11 +28,9 @@ const ViewRevista = () => {
   const [noticias, setNoticias] = useState([]);
 
   useEffect(() => {
-    fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/noticias')
-      .then((response) => response.json())
-      .then((data) => {
-        const filteredData = data.noticias.filter(noticia => noticia.id >= 10);
-        setNoticias(filteredData);
+    axios.get('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/noticias')
+      .then((response) => {
+        setNoticias(response.data.noticias);
       })
       .catch((error) => console.error(error));
   }, []);
@@ -43,8 +41,8 @@ const ViewRevista = () => {
       <ScrollView>
         {noticias.map((noticia) => (
           <NewsCard
-            key={noticia.id}
-            image={{ uri: noticia.portada }}
+            key={noticia.ID}
+            image={noticia.portada}
             title={noticia.titulo}
             category={noticia.tags.map(tag => tag.value).join(", ")}
             url={noticia.url}
@@ -111,11 +109,6 @@ const styles = StyleSheet.create({
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  buttonIcon: {
-    width: 20,
-    height: 20,
-    marginRight: 5,
   },
   buttonText: {
     color: '#fff',
