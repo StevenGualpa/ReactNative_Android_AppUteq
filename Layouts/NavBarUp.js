@@ -213,7 +213,7 @@ const NavigationBar = () => {
         </View>
       </Modal>
 
-      <Modal visible={selectedFacultad !== null && isModalOpen} animationType="slide" transparent={true}>
+      <Modal visible={selectedFacultad !== null } animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <ImageBackground source={require('./src/Fondo.jpg')} style={styles.modalBackground}>
             {renderModalContent()}
