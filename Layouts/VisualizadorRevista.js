@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'green',
+    color: '#46741e',
     marginBottom: 20,
     textAlign: 'center', // Centra el encabezado
   },
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   button: {
-    backgroundColor: '#46b41e',
+    backgroundColor: '#46741e',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 12,

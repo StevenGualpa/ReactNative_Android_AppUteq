@@ -82,7 +82,7 @@ const ProfileCard = ({ Nombre, Apellidos, Correo, Contraseña, onEdit }) => {
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={handleEdit}>
-          <AntDesign name="edit" size={24} color="#46b41e" />
+          <AntDesign name="edit" size={24} color="#46741e" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} /*onPress={handleDelete}*/>
           <FontAwesome name="trash" size={24} color="red" />
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   modalButton: {
-    backgroundColor: '#46b41e',
+    backgroundColor: '#46741e',
     borderRadius: 4,
     paddingVertical: 10,
     paddingHorizontal: 20,

@@ -3,13 +3,14 @@ import AppUsuario from './CrearUsuario';
 import React, { useState } from 'react';
 import { Modal, View, StyleSheet, Text, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get('window');
 const cardWidth = (width - 150) / 2;
 
 const Card = ({ iconName, title, onPress }) => (
   <TouchableOpacity style={styles.card} onPress={onPress}>
-    <Ionicons name={iconName} size={40} color="#46b41e" />
+    <Ionicons name={iconName} size={40} color="#46741e" />
     <Text style={styles.title}>{title}</Text>
   </TouchableOpacity>
 );
@@ -19,19 +20,17 @@ const ModalUsuario = ({ isVisible, onClose }) => {
   const [showBackButton, setShowBackButton] = useState(false);
   const [showCloseButton, setShowCloseButton] = useState(true);
   const [openGestion, setOpenGestion] = useState(false);
+  const navigation = useNavigation();
 
   const handleCardPress = (title) => {
     if (title === 'Crear') {
-      setopenCrearUsuario(true);
-      setOpenGestion(false);
-      setShowBackButton(true);
-      setShowCloseButton(false);
+       //llamar a la interfaz de Usuario mediente por navigation y cierra el modal 
+      navigation.navigate("User");
+      isVisible=onClose();
       console.log('Abrir CrearUsuario');
     } else if (title === 'Gestionar') {
-      setopenCrearUsuario(false);
-      setOpenGestion(true);
-      setShowBackButton(true);
-      setShowCloseButton(false);
+      navigation.navigate("UserG");
+      isVisible=onClose();
       console.log('Abrir Gestionar');
     } else {
       console.log(`Presionaste ${title}`);
@@ -114,7 +113,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: '#46b41e',
+    backgroundColor: '#46741e',
     borderRadius: 50,
     padding: 5,
   },
@@ -122,7 +121,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     left: 20,
-    backgroundColor: '#46b41e',
+    backgroundColor: '#46741e',
     borderRadius: 50,
     padding: 5,
   },

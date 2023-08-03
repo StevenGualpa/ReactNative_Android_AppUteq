@@ -4,29 +4,30 @@ import { Ionicons } from '@expo/vector-icons';
 
 export const BotonContenido = ({ onPress }) => (
     <TouchableOpacity style={styles.boton} onPress={onPress}>
-      <Ionicons name="md-document" size={60} color="#46b41e" />
+      <Ionicons name="md-document" size={60} color="#46741e" />
       <Text style={styles.titulo}>Contenido</Text>
     </TouchableOpacity>
   );
 
   export const BotonFacultades = ({ onPress }) => (
     <TouchableOpacity style={styles.boton} onPress={onPress}>
-      <Ionicons name="md-school" size={60} color="#46b41e" />
+      <Ionicons name="md-school" size={60} color="#46741e" />
       <Text style={styles.titulo}>Facultades</Text>
     </TouchableOpacity>
   );
 
   export const BotonChatBox = ({ onPress }) => (
     <TouchableOpacity style={styles.boton} onPress={onPress}>
-      <Ionicons name="md-chatbubbles" size={60} color="#46b41e" />
+      <Ionicons name="md-chatbubbles" size={60} color="#46741e" />
       <Text style={styles.titulo}>ChatBox</Text>
     </TouchableOpacity>
   );
 
   export const BotonUsuarios=({onPress})=>(
     <TouchableOpacity style={styles.boton} onPress={onPress}>
-      <Ionicons name="md-person" size={60} color="#46b41e" />
-      <Text style={styles.titulo}>Usuarios</Text>
+      <Ionicons name="md-person" size={60} color="#46741e" />
+      <Text style={styles.titulo}>Administradores
+  </Text>
     </TouchableOpacity>
   );
 

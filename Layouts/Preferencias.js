@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions, FlatList, RefreshControl } from 'react-native';
 import { CheckBox } from 'react-native-elements';
-import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -17,10 +16,9 @@ export function Prefer() {
 
   const fetchData = async () => {
     try {
-      const db = getFirestore();
-      const facultadesCollection = collection(db, 'Facultades');
-      const facultadesSnapshot = await getDocs(facultadesCollection);
-      const facultadesData = facultadesSnapshot.docs.map((doc) => doc.data().nombre);
+      const response = await fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/facultades/getall');
+      const data = await response.json();
+      const facultadesData = data.facultad.map((facultad) => facultad.nombre);
       setFacultades(facultadesData);
     } catch (error) {
       console.error('Error al obtener las facultades:', error);
@@ -53,11 +51,9 @@ export function Prefer() {
 
   const onRefresh = () => {
     setRefreshing(true);
-    // Realiza aquí las acciones que deseas hacer durante el refresco
-    fetchData(); // Por ejemplo, puedes volver a cargar los datos
+    fetchData(); // Cargar nuevamente los datos
     setRefreshing(false);
   };
-
 
   return (
     <View style={styles.container}>
@@ -72,7 +68,7 @@ export function Prefer() {
         }
       />
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#46b41e' }]}
+        style={[styles.button, { backgroundColor: '#46741e' }]}
         onPress={() => console.log('Opciones seleccionadas:', checkedItems)}
       >
         <Text style={styles.buttonText}>Guardar</Text>
@@ -93,7 +89,7 @@ const styles = StyleSheet.create({
     fontSize: windowHeight * 0.04,
     fontWeight: 'bold',
     marginBottom: windowHeight * 0.01,
-    color: '#46b41e',
+    color: '#46741e',
   },
   checkboxContainer: {
     paddingTop: windowHeight * 0.02,

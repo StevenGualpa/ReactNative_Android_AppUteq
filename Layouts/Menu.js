@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 40,
     fontWeight: 'bold',
-    color: '#46b41e',
+    color: '#46741e',
   },
   column: {
     flexDirection: 'row',

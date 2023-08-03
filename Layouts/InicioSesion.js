@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,8 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import RegistroModal from './ModalRegister';
 import { useNavigation } from '@react-navigation/native';
+import messaging from '@react-native-firebase/messaging'; // Import the messaging module
+
 const { width, height } = Dimensions.get('window');
 
 const LoginScreen = () => {
@@ -24,34 +26,50 @@ const LoginScreen = () => {
   const [isButtonInverted, setButtonInverted] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false); // Estado para controlar la visibilidad del modal
 
-  
-  const handleLogin = () => {
+  useEffect(() => {
+    const unsubscribe = messaging().onTokenRefresh(async (newToken) => {
+      console.log('New Device Token: ', newToken);
+      // Aquí puedes actualizar el token del dispositivo en tu servidor
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const handleLogin = async () => {
     if (!correo.trim() || !contraseña.trim()) {
       Alert.alert('Campos vacíos', 'Por favor, completa todos los campos.');
       return;
     }
 
-    // Validar formato del correo utilizando una expresión regular
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const allowedDomains = ['uteq.edu.ec', 'gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com', 'outlook.es'];
     const endsWithAllowedDomain = allowedDomains.some((domain) => correo.toLowerCase().endsWith('@' + domain));
-    
+
     if (!emailRegex.test(correo) || !endsWithAllowedDomain) {
       Alert.alert('Correo inválido', 'Por favor, ingresa un correo válido con uno de los siguientes dominios: @uteq.edu.ec, @gmail.com, @hotmail.com, @yahoo.com, @outlook.com');
       return;
     }
 
-    // Aquí es donde se envía la solicitud HTTP POST al endpoint de inicio de sesión
-    fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email: correo,
-        password: contraseña
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+    if (enabled) {
+      const deviceToken = await messaging().getToken();
+      console.log('Device token for push notifications:', deviceToken);
+
+      fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/usuarios/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: correo,
+          password: contraseña,
+          deviceToken: deviceToken
+        })
       })
-    })
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -59,10 +77,7 @@ const LoginScreen = () => {
         return response.json();
       })
       .then(data => {
-        // Aquí puedes manejar la respuesta del servidor. `data` es el objeto de respuesta.
-        // Por ejemplo, puedes verificar si la solicitud fue exitosa y navegar a otra pantalla si lo fue.
         console.log('datos', data);
-     // Comprueba si el correo electrónico y la contraseña son los mismos que los enviados.
         if (data.usuario.email === correo && data.usuario.password === contraseña) {
           console.log('El correo electrónico y la contraseña coinciden con los enviados.');
           navigation.navigate('NavigationBar');
@@ -71,13 +86,10 @@ const LoginScreen = () => {
         }
       })
       .catch(error => {
-        // Aquí puedes manejar cualquier error que ocurra durante la solicitud.
         console.error('Error en el JSON:', error);
       });
+    }
   };
-
-
-
 
   const handleRegisterModal = () => {
     setModalVisible(true);
@@ -160,7 +172,6 @@ const LoginScreen = () => {
             <Text style={styles.registerText}>Registrarse</Text>
           </TouchableOpacity>
 
-          {/* Mostrar el RegistroModal si isModalVisible es true */}
           <RegistroModal
             visible={isModalVisible}
             onClose={() => setModalVisible(false)}

@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, Modal, TextInput, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, Modal, TextInput, ActivityIndicator,RefreshControl } from 'react-native';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
-
-const ContentCard = ({ id, title, description, url, onPressEdit, onDelete }) => {
+import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
+import moment from 'moment';
+import 'moment/locale/es'; 
+moment.locale('es');
+const ContentCard = ({ id, title, description, fecha,url,url_imagen, onPressEdit, onDelete }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedDescription, setEditedDescription] = useState(description);
   const [editedUrl, setEditedUrl] = useState(url);
+  const [editeUrlima, setEditeUrlima] = useState(url_imagen);
   const [originalTitle, setOriginalTitle] = useState(title);
   const [originalDescription, setOriginalDescription] = useState(description);
   const [originalUrl, setOriginalUrl] = useState(url);
+  const [originakima, setOriginalima]=useState(url_imagen);
+
 
   // Función para manejar la acción de editar contenido
   const handleEdit = () => {
@@ -19,7 +26,7 @@ const ContentCard = ({ id, title, description, url, onPressEdit, onDelete }) => 
   // Función para manejar la acción de guardar los cambios al editar contenido
   const handleSave = async () => {
     // Validar campos vacíos y URL válida
-    if (!editedTitle.trim() || !editedDescription.trim() || !isValidUrl(editedUrl)) {
+    if (!editedTitle.trim() || !editedDescription.trim() || !isValidUrl(editedUrl) || !editeUrlima.trim() ) {
       Alert.alert('Error', 'Por favor, complete todos los campos y asegúrese de ingresar una URL válida.');
       return;
     }
@@ -36,6 +43,7 @@ const ContentCard = ({ id, title, description, url, onPressEdit, onDelete }) => 
             setEditedTitle(originalTitle);
             setEditedDescription(originalDescription);
             setEditedUrl(originalUrl);
+            setEditeUrlima(originakima)
             setModalVisible(false);
           },
         },
@@ -43,27 +51,29 @@ const ContentCard = ({ id, title, description, url, onPressEdit, onDelete }) => 
           text: 'Sí',
           onPress: async () => {
             try {
-              const data = {
+              const editedData = {
                 titulo: editedTitle,
                 descripcion: editedDescription,
-                url: editedUrl,
+                url_video: editedUrl,
+                url_imageb: editeUrlima,
+                usuario_id: 1,
               };
-
               // Actualizar el documento con los datos editados
-              await fetch(`https://noticias-uteq-4c62c24e7cc5.herokuapp.com/multimedia/${id}`, {
+              await fetch(`https://noticias-uteq-4c62c24e7cc5.herokuapp.com/multimedia/update/${id}`, {
                 method: 'PUT',
                 headers: {
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data),
-              });
+                body: JSON.stringify(editedData),
+              })
 
               // Mostrar mensaje de éxito y actualizar la información en la lista
               Alert.alert('Los datos se modificaron correctamente');
               setModalVisible(false);
-              onPressEdit(id, editedTitle, editedDescription, editedUrl);
+              onPressEdit(id, editedData);
             } catch (error) {
               console.error('Error al guardar los cambios:', error);
+
             }
           },
         },
@@ -97,6 +107,7 @@ const ContentCard = ({ id, title, description, url, onPressEdit, onDelete }) => 
     setEditedDescription(description);
     setEditedUrl(url);
     setModalVisible(false);
+    setEditeUrlima(url_imagen);
   };
 
   // Función para validar si una URL es válida
@@ -104,20 +115,23 @@ const ContentCard = ({ id, title, description, url, onPressEdit, onDelete }) => 
     const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
     return urlRegex.test(value);
   };
+ 
 
   // Restringir la descripción a un máximo de 50 caracteres para mostrar en la tarjeta
   const truncatedDescription = description.length > 50 ? `${description.substring(0, 50)}...` : description;
 
   return (
+    
     <View style={styles.card}>
-      <View style={styles.logoContainer}>
-        <Image source={require('./iconos/Tiktokicon.png')} style={styles.logo} />
-        <Text style={styles.title}>{title}</Text>
+      <View style={styles.imageContainer}>
+      <Text style={styles.title}>{title}</Text>
+        <Image source={{ uri: editeUrlima }} style={styles.logo} />
       </View>
+      <Text style={styles.fecha}>{moment(fecha).format('LL')}</Text>
       <Text style={styles.description}>{truncatedDescription}</Text>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={handleEdit}>
-          <AntDesign name="edit" size={24} color="#46b41e" />
+          <AntDesign name="edit" size={24} color="#46741e" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleDelete}>
           <FontAwesome name="trash" size={24} color="red" />
@@ -150,6 +164,13 @@ const ContentCard = ({ id, title, description, url, onPressEdit, onDelete }) => 
               value={editedUrl}
               onChangeText={(text) => setEditedUrl(text)}
             />
+            <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Imagen</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Imagen"
+              value={editeUrlima}
+              onChangeText={(text) => setEditeUrlima(text)}
+            />
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity style={styles.modalButton} onPress={handleSave}>
                 <Text style={styles.modalButtonText}>Guardar</Text>
@@ -167,9 +188,27 @@ const ContentCard = ({ id, title, description, url, onPressEdit, onDelete }) => 
 
 const AppGestion = () => {
   const [contentData, setContentData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/multimedia/')
+  // Función para manejar el evento de "pull to refresh" en la lista de contenidos
+  const onRefresh = async () => {
+    setRefreshing(true);
+    // Limpiar los datos existentes al hacer refresh
+    setContentData([]);
+    try {
+      // Obtener los nuevos datos actualizados
+      await fetchContentData();
+    } catch (error) {
+      console.error('Error al cargar los datos:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const fetchContentData = () => {
+    setLoading(true);
+    fetch('https://noticias-uteq-4c62c24e7cc5.herokuapp.com/multimedia/getAll')
       .then((response) => response.json())
       .then((data) =>
         setContentData(
@@ -177,23 +216,26 @@ const AppGestion = () => {
             id: item.ID,
             titulo: item.titulo,
             descripcion: item.descripcion,
-            url: item.url,
+            url: item.url_video,
+            url_imagen: item.url_imageb,
           }))
         )
       )
-      .catch((error) => console.error('Error:', error));
+      .catch((error) => console.error('Error:', error))
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    fetchContentData();
   }, []);
 
   // Función para manejar la acción de editar contenido en la lista
-  const handleEditContent = (id, editedTitle, editedDescription, editedUrl) => {
+  const handleEditContent = (id, editedData) => {
     // Actualizar la información en la lista de contenido
     const updatedData = contentData.map((content) => {
       if (content.id === id) {
         return {
           ...content,
-          titulo: editedTitle,
-          descripcion: editedDescription,
-          url: editedUrl,
+          ...editedData, // Desestructuramos el objeto editedData para actualizar los campos modificados
         };
       }
       return content;
@@ -207,7 +249,7 @@ const AppGestion = () => {
   const handleDeleteContent = async (id) => {
     try {
       // Eliminar el documento correspondiente al contenido
-      await fetch(`https://noticias-uteq-4c62c24e7cc5.herokuapp.com/multimedia/${id}`, {
+      await fetch(`https://noticias-uteq-4c62c24e7cc5.herokuapp.com/multimedia/Delete/${id}`, {
         method: 'DELETE',
       });
 
@@ -221,19 +263,25 @@ const AppGestion = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Gestión de contenido</Text>
-      <ScrollView>
+      {loading ? (
+        <ActivityIndicator size="large" color="green" style={styles.loadingIndicator} />
+      ) : (
+      <ScrollView  refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         {contentData.map((content) => (
           <ContentCard
             key={content.id}
             id={content.id}
             title={content.titulo}
+            fecha={content.UpdatedAt}
             description={content.descripcion}
             url={content.url}
+            url_imagen={content.url_imagen}
             onPressEdit={handleEditContent}
             onDelete={handleDeleteContent}
           />
         ))}
       </ScrollView>
+      )}
     </View>
   );
 };
@@ -247,7 +295,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'green',
+    color: '#46741e',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -265,34 +313,32 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
-  logoContainer: {
-    flexDirection: 'row',
+  imageContainer: {
     alignItems: 'center',
-
+    marginBottom: 10,
   },
   logo: {
-    width: 80,
-    height: 100,
-    marginRight: 10,
-    marginTop: -20,
-    marginBottom: -18,
+    width: 120, // Ajusta el ancho de la imagen según tu preferencia
+    height: 150, // Ajusta el alto de la imagen según tu preferencia
+    borderRadius: 10,
+  },
+  contentContainer: {
+    flex: 1,
   },
   title: {
-    flex: 1, // Permite que el título tome el espacio restante en la misma fila del logo
+    marginBottom:12,
     fontSize: 18,
     fontWeight: 'bold',
   },
   description: {
-    flex: 1,
-    marginVertical: 12,
     fontSize: 16,
     marginBottom: 10,
+    color: 'black',
   },
-  fecha: {
-    fontSize: 12,
-    color: 'gray',
-    marginBottom: 10,
-  },
+  fecha:{textAlign:'center',
+  marginBottom:6,
+  marginTop:4},
+
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -306,7 +352,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   modalButton: {
-    backgroundColor: '#46b41e',
+    backgroundColor: '#46741e',
     borderRadius: 4,
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -350,6 +396,26 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  selectImageButton: {
+    backgroundColor: '#46741e',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    marginTop: 10,
+    width:150,
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  selectImageButtonText: {
+    fontSize: 15,
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  uploadIcon: {
+    marginRight: 8,
   },
 });
 

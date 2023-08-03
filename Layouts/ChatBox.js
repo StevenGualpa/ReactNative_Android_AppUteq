@@ -1,114 +1,78 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Text, TextInput, TouchableOpacity, FlatList } from 'react-native';
+import { View, StyleSheet, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
-import Voice from '@react-native-voice/voice';
+import axios from 'axios';
 
 const ChatScreen = () => {
   // Estados del componente
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recognizedText, setRecognizedText] = useState('');
-  const [isMessageMode, setIsMessageMode] = useState(true);
   const flatListRef = useRef();
-  
+
+  // Configurar el interceptor para manejar errores de respuesta
   useEffect(() => {
-    // Configurar el evento de reconocimiento de voz al montar el componente
-    Voice.onSpeechResults = onSpeechResults;
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        console.error('Error al enviar el mensaje al web service:', error);
+        return Promise.reject('Error al enviar el mensaje. Por favor, inténtalo nuevamente.');
+      }
+    );
+
     return () => {
-      // Limpiar el evento al desmontar el componente
-      Voice.destroy().then(Voice.removeAllListeners);
+      // Limpiar el interceptor al desmontar el componente
+      axios.interceptors.response.eject(responseInterceptor);
     };
   }, []);
 
-  const startRecording = async () => {
-    // Iniciar el reconocimiento de voz
+  const sendMessageAndGetResponse = async (message) => {
     try {
-      await Voice.start('es'); // Iniciar el reconocimiento de voz en español
-      setIsRecording(true);
-      setRecognizedText('');
-      setIsMessageMode(false);
+      const response = await axios.get(`https://cristianzambranovega.pythonanywhere.com/query`, {
+        params: {
+          text: message,
+        },
+      });
+
+      return response.data.respuesta || '';
     } catch (error) {
-      console.error('Error al iniciar el reconocimiento de voz:', error);
+      console.error('Error al enviar el mensaje al web service:', error);
+      return 'Error al enviar el mensaje. Por favor, inténtalo nuevamente.';
     }
   };
 
-  const stopRecording = async () => {
-    // Detener el reconocimiento de voz
-    try {
-      await Voice.stop();
-      setIsRecording(false);
-      setIsMessageMode(true);
-    } catch (error) {
-      console.error('Error al detener el reconocimiento de voz:', error);
-    }
-  };
-
-  const onSpeechResults = (event) => {
-    // Obtener el texto reconocido del resultado del reconocimiento de voz
-    const recognizedText = event.value[0];
-    setMessage(recognizedText);
-  };
-
-  const sendMessage = () => {
+  const sendMessage = async () => {
     // Enviar un nuevo mensaje
     if (message.trim().length > 0) {
       const newMessage = { text: message, isSent: true };
       setMessages((prevMessages) => [newMessage, ...prevMessages]);
       setMessage('');
-      flatListRef.current.scrollToOffset({ offset: 0, animated: true });
-    }
-  };
 
-  const renderMicButton = () => {
-    // Renderizar el botón del micrófono
-    return (
-      <TouchableOpacity style={styles.sendButton} onPress={handleMicButtonPress}>
-        <Ionicons name="mic" size={24} color="white" />
-      </TouchableOpacity>
-    );
-  };
+      // Mostrar la pregunta en el log
+      console.log('Pregunta:', message);
 
-  const renderSendButton = () => {
-    // Renderizar el botón de envío de mensaje
-    return (
-      <TouchableOpacity style={styles.sendButton} onPress={handleSendButtonPress}>
-        <Ionicons name="send" size={24} color="white" />
-      </TouchableOpacity>
-    );
-  };
+      // Enviar el mensaje al web service utilizando el método GET
+      const responseText = await sendMessageAndGetResponse(message);
 
-  const handleMicButtonPress = () => {
-    // Manejar el evento de presionar el botón del micrófono (iniciar o detener el reconocimiento de voz)
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
+      // Agregar la respuesta al chat
+      const respuestaMessage = { text: responseText, isSent: false };
+      setMessages((prevMessages) => [respuestaMessage, ...prevMessages]);
+      flatListRef.current.scrollToEnd({ animated: true });
+
+      // Ocultar el teclado después de enviar el mensaje
+      Keyboard.dismiss();
     }
   };
 
   const handleSendButtonPress = () => {
     // Manejar el evento de presionar el botón de envío de mensaje
-    setIsMessageMode(true);
     sendMessage();
-  };
-
-  const renderSendButtonIcon = () => {
-    // Renderizar el ícono del botón de envío (micrófono o flecha de envío)
-    if (isRecording) {
-      return renderMicButton();
-    } else if (isMessageMode && message.trim().length > 0) {
-      return renderSendButton();
-    } else {
-      return renderMicButton();
-    }
   };
 
   const renderMessageItem = ({ item }) => (
     // Renderizar cada elemento de mensaje en la lista (mensaje enviado o recibido)
     <View style={[styles.messageItem, item.isSent ? styles.sentMessage : styles.receivedMessage]}>
-      <Text style={styles.messageText}>{item.text}</Text>
+      <Text style={[styles.messageText, item.isSent ? styles.sentMessageText : styles.receivedMessageText]}>{item.text}</Text>
     </View>
   );
 
@@ -124,26 +88,31 @@ const ChatScreen = () => {
       {/* Lista de mensajes */}
       <FlatList
         style={styles.chatContainer}
-        contentContainerStyle={styles.chatContentContainer}
-        data={messages.slice().reverse()} // Invertimos el orden del arreglo para mostrar los nuevos mensajes en la parte superior
+        data={messages}
         renderItem={renderMessageItem}
         keyExtractor={(item, index) => index.toString()}
         ref={flatListRef}
-        ListEmptyComponent={() => <Text>No hay mensajes</Text>}
+        ListEmptyComponent={() => <Text></Text>}
+        inverted // Mostrar los nuevos mensajes en la parte inferior
       />
       {/* Cuadro de entrada de mensaje */}
-      <View style={styles.inputContainer}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={80}
+        style={styles.inputContainer}
+      >
         <TextInput
           style={styles.input}
           placeholder="Escribe tu mensaje..."
           value={message}
           onChangeText={setMessage}
+          onSubmitEditing={handleSendButtonPress} // Ocultar el teclado al presionar enviar
         />
         {/* Botón de envío */}
-        <TouchableOpacity style={styles.sendButton} onPress={handleMicButtonPress}>
-          {renderSendButtonIcon()}
+        <TouchableOpacity style={styles.sendButton} onPress={handleSendButtonPress}>
+          <Ionicons name="send" size={24} color="white" />
         </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 };
@@ -167,10 +136,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     backgroundColor: '#f5f5f5',
   },
-  chatContentContainer: {
-    flexGrow: 1,
-    justifyContent: 'flex-end', // Para que los nuevos mensajes se muestren en la parte superior
-  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -189,7 +154,7 @@ const styles = StyleSheet.create({
     marginTop: 7,
   },
   sendButton: {
-    backgroundColor: '#46b41e',
+    backgroundColor: '#46741e',
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -202,6 +167,8 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd', // Color del borde de la burbuja de chat
   },
   sentMessage: {
     alignSelf: 'flex-end',
@@ -221,6 +188,13 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
+  },
+  sentMessageText: {
+    color: 'white', // Color del texto de mensaje enviado
+  },
+  receivedMessageText: {
+    color: 'black', // Color del texto de mensaje recibido
+    fontWeight: 'bold', // Puedes ajustar otros estilos según tus preferencias
   },
 });
 
