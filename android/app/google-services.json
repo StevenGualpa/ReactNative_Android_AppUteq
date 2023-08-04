@@ -1,0 +1,105 @@
+{
+  "project_info": {
+    "project_number": "798041694675",
+    "project_id": "notificauteq-19631",
+    "storage_bucket": "notificauteq-19631.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798041694675:android:6f6b569d5d586b450ecf26",
+        "android_client_info": {
+          "package_name": "com.geek.myapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "798041694675-4ktjr02iokc9paphm6o3funvb5srsirt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdnOYZOyyjnY1Q4rYYu2XJC8di3WWKVfY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "798041694675-4ktjr02iokc9paphm6o3funvb5srsirt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798041694675:android:12692ed16462216a0ecf26",
+        "android_client_info": {
+          "package_name": "com.stevengualpa.UTEQAppV2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "798041694675-4ktjr02iokc9paphm6o3funvb5srsirt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdnOYZOyyjnY1Q4rYYu2XJC8di3WWKVfY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "798041694675-4ktjr02iokc9paphm6o3funvb5srsirt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798041694675:android:e65f2be6cfa69dbf0ecf26",
+        "android_client_info": {
+          "package_name": "com.uteq.prototipo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "798041694675-93sib21mhggo7l0he80tv7lc8ltrjm4v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uteq.prototipo",
+            "certificate_hash": "66d45977e3a963e23f75e7eead6fb4d44d9340ab"
+          }
+        },
+        {
+          "client_id": "798041694675-4ktjr02iokc9paphm6o3funvb5srsirt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdnOYZOyyjnY1Q4rYYu2XJC8di3WWKVfY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "798041694675-4ktjr02iokc9paphm6o3funvb5srsirt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
